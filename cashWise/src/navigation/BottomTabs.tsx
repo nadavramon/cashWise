@@ -7,6 +7,8 @@ import BudgetScreen from '../screens/BudgetScreen';
 import ToolsStack from './ToolsStack';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming, withSpring } from 'react-native-reanimated';
+import { useProfile } from '../store/ProfileContext';
+import { t } from '../utils/i18n';
 
 export type RootTabParamList = {
   Overview: undefined;
@@ -142,6 +144,9 @@ const TabButton = ({ onPress, isFocused, options, label, tabWidth }: any) => {
 };
 
 const BottomTabs: React.FC = () => {
+  const { profile } = useProfile();
+  const language = profile?.language || 'en';
+
   return (
     <Tab.Navigator
       initialRouteName="Overview"
@@ -158,7 +163,7 @@ const BottomTabs: React.FC = () => {
           tabBarIcon: ({ color }) => (
             <MaterialIcons name="space-dashboard" size={24} color={color} />
           ),
-          tabBarLabel: 'Overview',
+          tabBarLabel: t('navOverview', language),
         }}
       />
       <Tab.Screen
@@ -168,7 +173,7 @@ const BottomTabs: React.FC = () => {
           tabBarIcon: ({ color }) => (
             <MaterialIcons name="pie-chart" size={24} color={color} />
           ),
-          tabBarLabel: 'Budget',
+          tabBarLabel: t('navBudget', language),
         }}
       />
       <Tab.Screen
@@ -178,7 +183,7 @@ const BottomTabs: React.FC = () => {
           tabBarIcon: ({ color }) => (
             <MaterialIcons name="construction" size={24} color={color} />
           ),
-          tabBarLabel: 'Tools',
+          tabBarLabel: t('navTools', language),
         }}
       />
     </Tab.Navigator>

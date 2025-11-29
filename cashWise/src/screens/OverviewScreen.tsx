@@ -24,6 +24,7 @@ import {
   buildDateRangeArray,
 } from '../utils/overview';
 import { getCurrencySymbol } from '../utils/currency';
+import { t, isRTL } from '../utils/i18n';
 import { CATEGORY_REPO } from '../data/categoryRepo';
 
 // Feature Components
@@ -42,6 +43,7 @@ const OverviewScreen: React.FC = () => {
   const { profile } = useProfile();
   const { categories } = useCategories();
   const currencySymbol = getCurrencySymbol(profile?.currency);
+  const language = profile?.language || 'en';
 
   // --- THEME & COLORS SETUP ---
   const isDarkMode = useColorScheme() === 'dark';
@@ -373,16 +375,18 @@ const OverviewScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <Text style={[styles.title, { color: textColor }]}>Overview</Text>
+        <Text style={[styles.title, { color: textColor }]}>{t('overviewTitle', language)}</Text>
         <OverviewHeader
           dateRange={dateRange}
           themeColor={themeColor}
+          title={undefined} // Header title handled by screen title above
         />
 
         <OverviewModeSwitcher
           currentMode={mode}
           onModeChange={handleModeChange}
           themeColor={themeColor}
+          language={language}
         />
 
         <View style={styles.modeContentWrapper}>
@@ -404,7 +408,7 @@ const OverviewScreen: React.FC = () => {
                 style={styles.bigAddButton}
                 onPress={() => setShowAddModal(true)}
               >
-                <Text style={styles.bigAddButtonText}>+ Add transaction</Text>
+                <Text style={styles.bigAddButtonText}>+ {t('addTransaction', language)}</Text>
               </TouchableOpacity>
             </View>
           ) : (

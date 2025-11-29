@@ -19,6 +19,7 @@ import { useCategories } from '../store/CategoriesContext';
 import { useProfile } from '../store/ProfileContext';
 import TransactionForm from '../components/TransactionForm';
 import type { Transaction } from '../types/models';
+import { t } from '../utils/i18n';
 
 type DailyRoute = RouteProp<OverviewStackParamList, 'DailyTransactions'>;
 
@@ -31,13 +32,18 @@ const DailyTransactionsScreen: React.FC = () => {
 
   const [showAddModal, setShowAddModal] = React.useState(false);
 
+  const { transactions } = useTransactions();
+  const { categories } = useCategories();
+  const { profile } = useProfile();
+  const language = profile?.language || 'en';
+
   // Dynamic Title
   React.useLayoutEffect(() => {
     const dateObj = new Date(date);
-    const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+    const locale = language === 'he' ? 'he-IL' : 'en-US';
+    const dayName = dateObj.toLocaleDateString(locale, { weekday: 'long' });
     const dayNum = dateObj.getDate();
-    const monthName = dateObj.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-    const fullDateString = `${dayName}, ${dayNum} ${monthName}`;
+    const monthName = dateObj.toLocaleDateString(locale, { month: 'short' }).toUpperCase();
 
     navigation.setOptions({
       title: '',
@@ -52,11 +58,7 @@ const DailyTransactionsScreen: React.FC = () => {
         </TouchableOpacity>
       ),
     });
-  }, [navigation, date, isDarkMode, themeColor]);
-
-  const { transactions } = useTransactions();
-  const { categories } = useCategories();
-  const { profile } = useProfile();
+  }, [navigation, date, isDarkMode, themeColor, language]);
 
   const dayTransactions = useMemo(
     () => transactions.filter((t) => t.date === date),
@@ -85,7 +87,7 @@ const DailyTransactionsScreen: React.FC = () => {
 
 
   const renderItem = ({ item }: { item: Transaction }) => {
-    const catName = categoryNameById[item.categoryId] ?? 'Uncategorized';
+    const catName = categoryNameById[item.categoryId] ?? t('uncategorized', language);
 
     return (
       <View style={styles.row}>
@@ -103,7 +105,7 @@ const DailyTransactionsScreen: React.FC = () => {
             {item.type === 'income' ? '+' : '-'}
             {item.amount.toFixed(2)}
           </Text>
-          <Text style={styles.rowType}>{item.type}</Text>
+          <Text style={styles.rowType}>{item.type === 'income' ? t('income', language) : t('expense', language)}</Text>
         </View>
       </View>
     );
@@ -114,7 +116,7 @@ const DailyTransactionsScreen: React.FC = () => {
       {/* Header area in Body */}
       <View style={styles.header}>
         <Text style={[styles.dateTitle, { color: isDarkMode ? '#fff' : '#000' }]}>
-          {new Date(date).toLocaleDateString('en-US', { weekday: 'long' })}, {new Date(date).getDate()} {new Date(date).toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}
+          {new Date(date).toLocaleDateString(language === 'he' ? 'he-IL' : 'en-US', { weekday: 'long' })}, {new Date(date).getDate()} {new Date(date).toLocaleDateString(language === 'he' ? 'he-IL' : 'en-US', { month: 'short' }).toUpperCase()}
         </Text>
         <Text style={[
           styles.totalAmount,

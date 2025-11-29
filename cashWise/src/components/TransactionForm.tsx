@@ -16,6 +16,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useCategories } from '../store/CategoriesContext';
 import { useTransactions } from '../store/TransactionsContext';
+import { t } from '../utils/i18n';
+import { useProfile } from '../store/ProfileContext';
 
 const todayAsString = () => {
   const d = new Date();
@@ -38,6 +40,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 }) => {
   const { addTransaction } = useTransactions();
   const { categories } = useCategories();
+  const { profile } = useProfile();
+  const language = profile?.language || 'en';
   const isDark = useColorScheme() === 'dark';
 
   const [type, setType] = useState<'income' | 'expense'>('expense');
@@ -61,17 +65,17 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     const parsedAmount = parseFloat(amount);
 
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      alert('Please enter a positive amount.');
+      alert(t('pleaseEnterPositiveAmount', language));
       return;
     }
 
     if (!categoryId) {
-      alert('Please select a category.');
+      alert(t('pleaseSelectCategory', language));
       return;
     }
 
     if (!date.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      alert('Invalid date format (YYYY-MM-DD).');
+      alert(t('invalidDateFormat', language));
       return;
     }
 
@@ -86,7 +90,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
       });
       onSuccess?.();
     } catch (e: any) {
-      alert(e?.message ?? 'Failed to save transaction.');
+      alert(e?.message ?? t('failedToSave', language));
     } finally {
       setSubmitting(false);
     }
@@ -104,7 +108,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             <TouchableOpacity onPress={onCancel} style={styles.closeButton}>
               <Ionicons name="close" size={24} color={subTextColor} />
             </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: textColor }]}>New transaction</Text>
+            <Text style={[styles.headerTitle, { color: textColor }]}>{t('newTransaction', language)}</Text>
             <View style={styles.headerRightPlaceholder} />
           </View>
 
@@ -128,7 +132,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                     type === 'expense' ? { color: '#fff' } : { color: subTextColor },
                   ]}
                 >
-                  Expense
+                  {t('expense', language)}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -144,14 +148,14 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                     type === 'income' ? { color: '#fff' } : { color: subTextColor },
                   ]}
                 >
-                  Income
+                  {t('income', language)}
                 </Text>
               </TouchableOpacity>
             </View>
 
             {/* Amount */}
             <View style={styles.section}>
-              <Text style={[styles.label, { color: subTextColor }]}>Amount</Text>
+              <Text style={[styles.label, { color: subTextColor }]}>{t('amount', language)}</Text>
               <TextInput
                 style={[styles.input, { color: textColor, backgroundColor: inputBg }]}
                 value={amount}
@@ -164,7 +168,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
             {/* Category */}
             <View style={styles.section}>
-              <Text style={[styles.label, { color: subTextColor }]}>Category</Text>
+              <Text style={[styles.label, { color: subTextColor }]}>{t('category', language)}</Text>
               <View style={styles.categoryContainer}>
                 {filteredCategories.map((c) => {
                   const isSelected = categoryId === c.id;
@@ -197,13 +201,13 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
             {/* Note */}
             <View style={styles.section}>
-              <Text style={[styles.label, { color: subTextColor }]}>Note</Text>
+              <Text style={[styles.label, { color: subTextColor }]}>{t('note', language)}</Text>
               <TextInput
                 style={[styles.input, { color: textColor, backgroundColor: inputBg, height: 80 }]}
                 value={note}
                 onChangeText={setNote}
                 multiline
-                placeholder="Add a note..."
+                placeholder={t('notePlaceholder', language)}
                 placeholderTextColor={subTextColor}
                 textAlignVertical="top"
               />
@@ -211,7 +215,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
             {/* Date */}
             <View style={styles.section}>
-              <Text style={[styles.label, { color: subTextColor }]}>Date</Text>
+              <Text style={[styles.label, { color: subTextColor }]}>{t('date', language)}</Text>
               <TextInput
                 style={[styles.input, { color: textColor, backgroundColor: inputBg }]}
                 value={date}
@@ -223,7 +227,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
             {/* Recurring (Placeholder) */}
             <View style={[styles.row, styles.section, { justifyContent: 'space-between', alignItems: 'center' }]}>
-              <Text style={[styles.label, { color: textColor, marginBottom: 0 }]}>Recurring Transaction</Text>
+              <Text style={[styles.label, { color: textColor, marginBottom: 0 }]}>{t('recurringTransaction', language)}</Text>
               <Switch
                 value={isRecurring}
                 onValueChange={setIsRecurring}
@@ -233,7 +237,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             </View>
             {isRecurring && (
               <Text style={{ color: subTextColor, fontSize: 12, marginTop: -10, marginBottom: 20 }}>
-                (Feature coming soon)
+                {t('featureComingSoon', language)}
               </Text>
             )}
 
@@ -247,7 +251,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               disabled={submitting}
             >
               <Text style={styles.saveButtonText}>
-                {submitting ? 'Saving...' : 'SAVE'}
+                {submitting ? t('saving', language) : t('saveChanges', language)}
               </Text>
             </TouchableOpacity>
 

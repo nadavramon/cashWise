@@ -18,6 +18,8 @@ import { TransactionsStackParamList } from '../navigation/TransactionsStack';
 import { useTransactions } from '../store/TransactionsContext';
 import { useCategories } from '../store/CategoriesContext';
 import { Transaction } from '../types/models';
+import { t } from '../utils/i18n';
+import { useProfile } from '../store/ProfileContext';
 
 type Props = NativeStackScreenProps<
   TransactionsStackParamList,
@@ -28,6 +30,8 @@ const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
   const { id, date } = route.params;
   const { transactions, updateTransaction } = useTransactions();
   const { categories } = useCategories();
+  const { profile } = useProfile();
+  const language = profile?.language || 'en';
 
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [amount, setAmount] = useState('');
@@ -63,12 +67,12 @@ const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
     const parsedAmount = parseFloat(amount);
 
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      Alert.alert('Invalid amount', 'Please enter a positive number.');
+      Alert.alert(t('invalidAmount', language), t('pleaseEnterPositiveAmount', language));
       return;
     }
 
     if (!categoryId) {
-      Alert.alert('Missing category', 'Please select a category.');
+      Alert.alert(t('missingCategory', language), t('pleaseSelectCategory', language));
       return;
     }
 
@@ -86,8 +90,8 @@ const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
       navigation.goBack();
     } catch (e: any) {
       Alert.alert(
-        'Error',
-        e?.message ?? 'Failed to update transaction. Please try again.',
+        t('error', language),
+        e?.message ?? t('failedToUpdate', language),
       );
     } finally {
       setSubmitting(false);
@@ -98,7 +102,7 @@ const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
     return (
       <View style={styles.center}>
         <Text style={styles.errorText}>
-          Transaction not found. Maybe it was deleted or not loaded yet.
+          {t('transactionNotFound', language)}
         </Text>
       </View>
     );
@@ -114,99 +118,99 @@ const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
           contentContainerStyle={styles.container}
           keyboardShouldPersistTaps="handled"
         >
-      <Text style={styles.label}>Type</Text>
-      <View style={styles.row}>
-        <TouchableOpacity
-          style={[styles.chip, type === 'expense' && styles.chipSelected]}
-          onPress={() => setType('expense')}
-        >
-          <Text
-            style={[
-              styles.chipText,
-              type === 'expense' && styles.chipTextSelected,
-            ]}
-          >
-            Expense
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.chip, type === 'income' && styles.chipSelected]}
-          onPress={() => setType('income')}
-        >
-          <Text
-            style={[
-              styles.chipText,
-              type === 'income' && styles.chipTextSelected,
-            ]}
-          >
-            Income
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      <Text style={styles.label}>Amount</Text>
-      <TextInput
-        style={styles.input}
-        value={amount}
-        onChangeText={setAmount}
-        keyboardType="numeric"
-        placeholder="e.g. 120.50"
-      />
-
-      <Text style={styles.label}>Date</Text>
-      <Text style={styles.readonlyValue}>{transaction.date}</Text>
-
-      <Text style={styles.label}>Category</Text>
-      <View style={styles.categoryContainer}>
-        {filteredCategories.map((c) => {
-          const baseColor = c.color ?? (c.type === 'income' ? '#0a7f42' : '#b00020');
-          const isSelected = categoryId === c.id;
-          return (
+          <Text style={styles.label}>Type</Text>
+          <View style={styles.row}>
             <TouchableOpacity
-              key={c.id}
-              style={[
-                styles.categoryChip,
-                { borderColor: baseColor },
-                isSelected && [{ backgroundColor: baseColor + '20' }],
-              ]}
-              onPress={() => setCategoryId(c.id)}
+              style={[styles.chip, type === 'expense' && styles.chipSelected]}
+              onPress={() => setType('expense')}
             >
               <Text
                 style={[
-                  styles.categoryChipText,
-                  isSelected && { color: baseColor, fontWeight: '600' },
+                  styles.chipText,
+                  type === 'expense' && styles.chipTextSelected,
                 ]}
               >
-                {c.name}
+                {t('expense', language)}
               </Text>
             </TouchableOpacity>
-          );
-        })}
-      </View>
+            <TouchableOpacity
+              style={[styles.chip, type === 'income' && styles.chipSelected]}
+              onPress={() => setType('income')}
+            >
+              <Text
+                style={[
+                  styles.chipText,
+                  type === 'income' && styles.chipTextSelected,
+                ]}
+              >
+                {t('income', language)}
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-      <Text style={styles.label}>Note (optional)</Text>
-      <TextInput
-        style={[styles.input, { height: 60 }]}
-        value={note}
-        onChangeText={setNote}
-        multiline
-      />
+          <Text style={styles.label}>{t('amount', language)}</Text>
+          <TextInput
+            style={styles.input}
+            value={amount}
+            onChangeText={setAmount}
+            keyboardType="numeric"
+            placeholder="e.g. 120.50"
+          />
 
-      <View style={[styles.row, { marginTop: 16, alignItems: 'center' }]}>
-        <Text style={styles.label}>Include in stats?</Text>
-        <Button
-          title={includeInStats ? 'Yes' : 'No'}
-          onPress={() => setIncludeInStats((prev) => !prev)}
-        />
-      </View>
+          <Text style={styles.label}>{t('date', language)}</Text>
+          <Text style={styles.readonlyValue}>{transaction.date}</Text>
 
-      <View style={{ marginTop: 24 }}>
-        <Button
-          title={submitting ? 'Saving...' : 'Save Changes'}
-          onPress={handleSave}
-          disabled={submitting}
-        />
-      </View>
+          <Text style={styles.label}>{t('category', language)}</Text>
+          <View style={styles.categoryContainer}>
+            {filteredCategories.map((c) => {
+              const baseColor = c.color ?? (c.type === 'income' ? '#0a7f42' : '#b00020');
+              const isSelected = categoryId === c.id;
+              return (
+                <TouchableOpacity
+                  key={c.id}
+                  style={[
+                    styles.categoryChip,
+                    { borderColor: baseColor },
+                    isSelected && [{ backgroundColor: baseColor + '20' }],
+                  ]}
+                  onPress={() => setCategoryId(c.id)}
+                >
+                  <Text
+                    style={[
+                      styles.categoryChipText,
+                      isSelected && { color: baseColor, fontWeight: '600' },
+                    ]}
+                  >
+                    {c.name}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          <Text style={styles.label}>{t('note', language)} (optional)</Text>
+          <TextInput
+            style={[styles.input, { height: 60 }]}
+            value={note}
+            onChangeText={setNote}
+            multiline
+          />
+
+          <View style={[styles.row, { marginTop: 16, alignItems: 'center' }]}>
+            <Text style={styles.label}>{t('includeInStats', language)}</Text>
+            <Button
+              title={includeInStats ? t('yes', language) : t('no', language)}
+              onPress={() => setIncludeInStats((prev) => !prev)}
+            />
+          </View>
+
+          <View style={{ marginTop: 24 }}>
+            <Button
+              title={submitting ? t('saving', language) : t('saveChanges', language)}
+              onPress={handleSave}
+              disabled={submitting}
+            />
+          </View>
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>

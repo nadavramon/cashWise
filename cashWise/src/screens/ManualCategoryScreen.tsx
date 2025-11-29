@@ -12,10 +12,14 @@ import {
 import { useCategories } from '../store/CategoriesContext';
 import { Category } from '../types/models';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { t } from '../utils/i18n';
+import { useProfile } from '../store/ProfileContext';
 
 const ManualCategoryScreen: React.FC = () => {
   const { categories, loading, addCategory, deleteCategory, updateCategory } =
     useCategories();
+  const { profile } = useProfile();
+  const language = profile?.language || 'en';
 
   const [name, setName] = useState('');
   const [type, setType] = useState<'income' | 'expense'>('expense');
@@ -32,7 +36,7 @@ const ManualCategoryScreen: React.FC = () => {
 
   const handleSubmit = async () => {
     if (!name.trim()) {
-      Alert.alert('Missing name', 'Please enter a category name.');
+      Alert.alert(t('missingName', language), t('enterCategoryName', language));
       return;
     }
 
@@ -48,11 +52,11 @@ const ManualCategoryScreen: React.FC = () => {
       resetForm();
     } catch (e: any) {
       Alert.alert(
-        'Error',
+        t('error', language),
         e?.message ??
         (editingCategory
-          ? 'Failed to update category.'
-          : 'Failed to add category.'),
+          ? t('failedToUpdateCategory', language)
+          : t('failedToAddCategory', language)),
       );
     }
   };
@@ -65,12 +69,12 @@ const ManualCategoryScreen: React.FC = () => {
 
   const confirmDelete = (cat: Category) => {
     Alert.alert(
-      'Delete category',
-      `Are you sure you want to delete "${cat.name}"? Existing transactions will still reference it.`,
+      t('deleteCategory', language),
+      t('deleteCategoryConfirm', language).replace('{name}', cat.name),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('cancel', language), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('delete', language),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -79,7 +83,7 @@ const ManualCategoryScreen: React.FC = () => {
                 resetForm();
               }
             } catch (e: any) {
-              Alert.alert('Error', e?.message ?? 'Failed to delete category.');
+              Alert.alert(t('error', language), e?.message ?? t('failedToDeleteCategory', language));
             }
           },
         },
@@ -87,22 +91,22 @@ const ManualCategoryScreen: React.FC = () => {
     );
   };
 
-  const submitLabel = editingCategory ? 'Save changes' : 'Add Category';
+  const submitLabel = editingCategory ? t('saveChanges', language) : t('addCategory', language);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
-        <Text style={styles.title}>Categories</Text>
+        <Text style={styles.title}>{t('category', language)}</Text>
 
         <View style={styles.addContainer}>
           <Text style={styles.label}>
-            {editingCategory ? 'Edit category' : 'New category'}
+            {editingCategory ? t('editCategory', language) : t('newCategory', language)}
           </Text>
           <TextInput
             style={styles.input}
             value={name}
             onChangeText={setName}
-            placeholder="e.g. Groceries"
+            placeholder={t('categoryPlaceholder', language)}
           />
           <View style={styles.typeRow}>
             <TouchableOpacity
@@ -118,7 +122,7 @@ const ManualCategoryScreen: React.FC = () => {
                   type === 'expense' && styles.typeChipTextSelected,
                 ]}
               >
-                Expense
+                {t('expense', language)}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -134,7 +138,7 @@ const ManualCategoryScreen: React.FC = () => {
                   type === 'income' && styles.typeChipTextSelected,
                 ]}
               >
-                Income
+                {t('income', language)}
               </Text>
             </TouchableOpacity>
           </View>
@@ -147,12 +151,12 @@ const ManualCategoryScreen: React.FC = () => {
 
           {editingCategory && (
             <View style={{ marginTop: 8 }}>
-              <Button title="Cancel edit" onPress={resetForm} />
+              <Button title={t('cancelEdit', language)} onPress={resetForm} />
             </View>
           )}
         </View>
 
-        <Text style={[styles.subtitle, { marginTop: 16 }]}>Expense Categories</Text>
+        <Text style={[styles.subtitle, { marginTop: 16 }]}>{t('expenseCategories', language)}</Text>
         <FlatList
           data={expenseCategories}
           keyExtractor={(item) => item.id}
@@ -160,9 +164,9 @@ const ManualCategoryScreen: React.FC = () => {
             <View style={styles.row}>
               <Text style={styles.name}>{item.name}</Text>
               <View style={styles.rowButtons}>
-                <Button title="Edit" onPress={() => startEdit(item)} />
+                <Button title={t('edit', language)} onPress={() => startEdit(item)} />
                 <Button
-                  title="Delete"
+                  title={t('delete', language)}
                   color="red"
                   onPress={() => confirmDelete(item)}
                 />
@@ -171,7 +175,7 @@ const ManualCategoryScreen: React.FC = () => {
           )}
         />
 
-        <Text style={[styles.subtitle, { marginTop: 16 }]}>Income Categories</Text>
+        <Text style={[styles.subtitle, { marginTop: 16 }]}>{t('incomeCategories', language)}</Text>
         <FlatList
           data={incomeCategories}
           keyExtractor={(item) => item.id}
@@ -179,9 +183,9 @@ const ManualCategoryScreen: React.FC = () => {
             <View style={styles.row}>
               <Text style={styles.name}>{item.name}</Text>
               <View style={styles.rowButtons}>
-                <Button title="Edit" onPress={() => startEdit(item)} />
+                <Button title={t('edit', language)} onPress={() => startEdit(item)} />
                 <Button
-                  title="Delete"
+                  title={t('delete', language)}
                   color="red"
                   onPress={() => confirmDelete(item)}
                 />

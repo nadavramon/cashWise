@@ -13,6 +13,7 @@ import { useProfile } from '../store/ProfileContext';
 import { getCurrencySymbol } from '../utils/currency';
 import { RepoCategoryGroup, RepoCategoryItem } from '../data/categoryRepo';
 import { BudgetMode, PlannedBudgetItem } from '../types/budget';
+import { t } from '../utils/i18n';
 
 // Feature Components
 import BudgetModeSwitcher from '../components/features/budget/BudgetModeSwitcher';
@@ -27,6 +28,7 @@ const BudgetScreen: React.FC = () => {
   const { transactions, dateRange } = useTransactions();
   const { profile } = useProfile();
   const currencySymbol = getCurrencySymbol(profile?.currency);
+  const language = profile?.language || 'en';
 
   const [mode, setMode] = useState<BudgetMode>('PLAN');
 
@@ -91,12 +93,13 @@ const BudgetScreen: React.FC = () => {
     <GradientBackground>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
-          <OverviewHeader title="Budget" themeColor={themeColor} />
+          <OverviewHeader title={t('budgetTitle', language)} themeColor={themeColor} />
 
           <BudgetModeSwitcher
             currentMode={mode}
             onModeChange={setMode}
             themeColor={themeColor}
+            language={language}
           />
 
           <ScrollView contentContainerStyle={styles.contentContainer}>
@@ -119,13 +122,13 @@ const BudgetScreen: React.FC = () => {
 
             {mode === 'REMAINING' && (
               <View style={styles.placeholderContainer}>
-                <Text style={{ color: subTextColor }}>Remaining view coming soon</Text>
+                <Text style={{ color: subTextColor }}>{t('remainingComingSoon', language)}</Text>
               </View>
             )}
 
             {mode === 'INSIGHTS' && (
               <View style={styles.placeholderContainer}>
-                <Text style={{ color: subTextColor }}>Insights view coming soon</Text>
+                <Text style={{ color: subTextColor }}>{t('insightsComingSoon', language)}</Text>
               </View>
             )}
           </ScrollView>

@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, StyleSheet, useColorScheme } from 'react-
 import { Ionicons } from '@expo/vector-icons';
 import { CATEGORY_REPO, RepoCategoryGroup } from '../../../data/categoryRepo';
 import { PlannedBudgetItem } from '../../../types/budget';
+import { t } from '../../../utils/i18n';
+import { useProfile } from '../../../store/ProfileContext';
 
 interface CategorySectionProps {
     plannedBudgets: PlannedBudgetItem[];
@@ -15,6 +17,8 @@ const CategorySection: React.FC<CategorySectionProps> = ({
     currencySymbol,
     onAddCategory
 }) => {
+    const { profile } = useProfile();
+    const language = profile?.language || 'en';
     const isDark = useColorScheme() === 'dark';
     const textColor = isDark ? '#FFFFFF' : '#333333';
     const subTextColor = isDark ? '#CCCCCC' : '#666666';
@@ -55,7 +59,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
                             onPress={() => onAddCategory(group)}
                         >
                             <Ionicons name="add-circle" size={20} color={themeColor} />
-                            <Text style={[styles.addCategoryText, { color: themeColor }]}>Add category</Text>
+                            <Text style={[styles.addCategoryText, { color: themeColor }]}>{t('addCategory', language)}</Text>
                         </TouchableOpacity>
                     </View>
                 );

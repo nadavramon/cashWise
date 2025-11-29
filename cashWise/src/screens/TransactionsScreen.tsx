@@ -8,6 +8,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { TransactionsStackParamList } from '../navigation/TransactionsStack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { apiExportTransactions } from '../api/exportsApi';
+import { t } from '../utils/i18n';
 
 type Props = NativeStackScreenProps<TransactionsStackParamList, 'TransactionsList'>;
 
@@ -16,6 +17,7 @@ const TransactionsScreen: React.FC<Props> = ({ navigation }) => {
     useTransactions();
   const { categories } = useCategories();
   const { profile } = useProfile();
+  const language = profile?.language || 'en';
 
   const currencySymbol = getCurrencySymbol(profile?.currency);
 
@@ -23,19 +25,24 @@ const TransactionsScreen: React.FC<Props> = ({ navigation }) => {
   categories.forEach((c) => categoryMap.set(c.id, c.name));
 
   const confirmDelete = (tx: { id: string; date: string; amount: number; type: string }) => {
+    const typeLabel = tx.type === 'income' ? (language === 'he' ? 'הכנסה' : 'income') : (language === 'he' ? 'הוצאה' : 'expense');
+    const message = t('deleteTransactionMessage', language)
+      .replace('{type}', typeLabel)
+      .replace('{amount}', tx.amount.toFixed(2));
+
     Alert.alert(
-      'Delete transaction',
-      `Delete ${tx.type === 'income' ? 'income' : 'expense'} of ${tx.amount.toFixed(2)}?`,
+      t('deleteTransactionTitle', language),
+      message,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('cancel', language), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('delete', language),
           style: 'destructive',
           onPress: async () => {
             try {
               await deleteTransaction(tx.id, tx.date);
             } catch (e: any) {
-              Alert.alert('Error', e?.message ?? 'Failed to delete transaction.');
+              Alert.alert(t('error', language), e?.message ?? 'Failed to delete transaction.');
             }
           },
         },
@@ -50,10 +57,10 @@ const TransactionsScreen: React.FC<Props> = ({ navigation }) => {
       if (supported) {
         await Linking.openURL(url);
       } else {
-        Alert.alert('Error', 'Cannot open the export URL');
+        Alert.alert(t('error', language), t('exportError', language));
       }
     } catch (error: any) {
-      Alert.alert('Export Failed', error.message || 'Unknown error');
+      Alert.alert(t('exportFailed', language), error.message || 'Unknown error');
     }
   };
 
@@ -61,28 +68,28 @@ const TransactionsScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
         <View style={styles.headerRow}>
-          <Text style={styles.title}>Transactions</Text>
+          <Text style={styles.title}>{t('transactionsTitle', language)}</Text>
           <Button
-            title="Add"
+            title={t('add', language)}
             onPress={() => navigation.navigate('AddTransaction')}
           />
         </View>
         <View style={styles.filterRow}>
           <Button
-            title="This month"
+            title={t('filterThisMonth', language)}
             onPress={() => setPresetRange('THIS_MONTH')}
           />
           <Button
-            title="Last month"
+            title={t('filterLastMonth', language)}
             onPress={() => setPresetRange('LAST_MONTH')}
           />
           <Button
-            title="This week"
+            title={t('filterThisWeek', language)}
             onPress={() => setPresetRange('THIS_WEEK')}
           />
         </View>
         <View style={{ marginBottom: 12 }}>
-          <Button title="Export CSV" onPress={handleExport} />
+          <Button title={t('exportCSV', language)} onPress={handleExport} />
         </View>
 
         {/* Optional: debug/show active range */}
@@ -109,7 +116,7 @@ const TransactionsScreen: React.FC<Props> = ({ navigation }) => {
 
                 <View style={styles.rowButtons}>
                   <Button
-                    title="Edit"
+                    title={t('edit', language)}
                     onPress={() =>
                       navigation.navigate('EditTransaction', {
                         id: item.id,
@@ -118,7 +125,7 @@ const TransactionsScreen: React.FC<Props> = ({ navigation }) => {
                     }
                   />
                   <Button
-                    title="Delete"
+                    title={t('delete', language)}
                     color="red"
                     onPress={() => confirmDelete(item)}
                   />

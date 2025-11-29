@@ -13,6 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { PieChart } from 'react-native-chart-kit';
 import { CATEGORY_REPO } from '../../../data/categoryRepo';
 import { PlannedBudgetItem } from '../../../types/budget';
+import { t } from '../../../utils/i18n';
+import { useProfile } from '../../../store/ProfileContext';
 
 // Enable LayoutAnimation on Android
 if (
@@ -35,6 +37,8 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
     totalIncome,
     currencySymbol
 }) => {
+    const { profile } = useProfile();
+    const language = profile?.language || 'en';
     const isDark = useColorScheme() === 'dark';
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -71,7 +75,7 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
                 {/* Left: Chart */}
                 <View style={styles.chartContainer}>
                     <PieChart
-                        data={chartData.length > 0 ? chartData : [{ name: 'Empty', population: 1, color: '#ddd', legendFontColor: 'transparent', legendFontSize: 0 }]}
+                        data={chartData.length > 0 ? chartData : [{ name: t('empty', language), population: 1, color: '#ddd', legendFontColor: 'transparent', legendFontSize: 0 }]}
                         width={80}
                         height={80}
                         chartConfig={{
@@ -88,7 +92,7 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
                 {/* Right: Text Info */}
                 <View style={styles.cardInfo}>
                     <Text style={[styles.cardLabel, { color: subTextColor }]}>
-                        Total planned expenses
+                        {t('totalPlannedExpenses', language)}
                     </Text>
                     <Text style={[styles.cardAmount, { color: textColor }]}>
                         {currencySymbol}
@@ -134,7 +138,7 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
                         );
                     })}
                     {plannedBudgets.length === 0 && (
-                        <Text style={[styles.noDataText, { color: subTextColor }]}>No planned expenses yet.</Text>
+                        <Text style={[styles.noDataText, { color: subTextColor }]}>{t('noPlannedExpenses', language)}</Text>
                     )}
                 </View>
             )}

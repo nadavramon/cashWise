@@ -14,7 +14,13 @@ export type ToolsStackParamList = {
 
 const Stack = createNativeStackNavigator<ToolsStackParamList>();
 
+import { t } from '../utils/i18n';
+import { useProfile } from '../store/ProfileContext';
+
 const ToolsStack: React.FC = () => {
+  const { profile } = useProfile();
+  const language = profile?.language || 'en';
+
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -25,7 +31,7 @@ const ToolsStack: React.FC = () => {
       <Stack.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{ title: 'Profile' }}
+        options={{ title: t('toolsProfile', language) }}
       />
       <Stack.Screen
         name="Categories"
@@ -35,7 +41,7 @@ const ToolsStack: React.FC = () => {
       <Stack.Screen
         name="ManualCategory"
         component={ManualCategoryScreen}
-        options={{ title: 'Add Manual Category' }}
+        options={{ title: t('toolsManualCategory', language) }}
       />
     </Stack.Navigator>
   );

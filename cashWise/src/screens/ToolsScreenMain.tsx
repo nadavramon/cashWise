@@ -19,12 +19,16 @@ import { useTransactions } from '../store/TransactionsContext';
 import { apiExportTransactions } from '../api/exportsApi';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur'; // Optional: for glass effect, or fallback to View
+import { t } from '../utils/i18n';
+import { useProfile } from '../store/ProfileContext';
 
 type Props = NativeStackScreenProps<ToolsStackParamList, 'ToolsHome'>;
 
 const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
   const { username, email, setUser } = useAuth();
   const { dateRange } = useTransactions();
+  const { profile } = useProfile();
+  const language = profile?.language || 'en';
   const [exporting, setExporting] = useState(false);
   const isDark = useColorScheme() === 'dark';
 
@@ -35,10 +39,10 @@ const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
   const cardBorder = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
 
   const handleSignOut = async () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('signOut', language), t('signOutConfirm', language), [
+      { text: t('cancel', language), style: 'cancel' },
       {
-        text: 'Sign Out',
+        text: t('signOut', language),
         style: 'destructive',
         onPress: async () => {
           try {
@@ -46,7 +50,7 @@ const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
             setUser(null);
           } catch (err: any) {
             console.error('SignOut error', err);
-            Alert.alert('Error', err.message || 'Failed to sign out.');
+            Alert.alert(t('error', language), err.message || 'Failed to sign out.');
           }
         },
       },
@@ -55,7 +59,7 @@ const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
 
   const handleExport = async () => {
     if (!dateRange) {
-      Alert.alert('No Range', 'Please set a date range before exporting.');
+      Alert.alert(t('noRange', language), t('noRangeMessage', language));
       return;
     }
 
@@ -68,11 +72,11 @@ const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
       if (url && (await Linking.canOpenURL(url))) {
         Linking.openURL(url);
       } else {
-        Alert.alert('Export ready', 'Download URL copied:\n' + url);
+        Alert.alert(t('exportReady', language), t('downloadUrlCopied', language) + url);
       }
     } catch (err: any) {
       console.error('Export failed', err);
-      Alert.alert('Export failed', err?.message ?? 'Unable to export data.');
+      Alert.alert(t('exportFailed', language), err?.message ?? t('exportFailedMessage', language));
     } finally {
       setExporting(false);
     }
@@ -130,7 +134,7 @@ const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
-          <Text style={[styles.pageTitle, { color: textColor }]}>Tools</Text>
+          <Text style={[styles.pageTitle, { color: textColor }]}>{t('navTools', language)}</Text>
         </View>
 
         {/* User Info Card */}
@@ -156,7 +160,7 @@ const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
         </View>
 
         <Text style={[styles.sectionHeader, { color: subTextColor }]}>
-          General
+          {t('general', language)}
         </Text>
 
         {/* Grid Layout */}
@@ -164,8 +168,8 @@ const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
           {/* 1. Profile */}
           <View style={styles.gridItem}>
             <ToolCard
-              title="Profile"
-              subtitle="Edit details"
+              title={t('toolsProfile', language)}
+              subtitle={t('editDetails', language)}
               icon="person"
               color="#007CBE" // CashWise Blue
               onPress={() => navigation.navigate('Profile')}
@@ -175,8 +179,8 @@ const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
           {/* 2. Categories */}
           <View style={styles.gridItem}>
             <ToolCard
-              title="Categories"
-              subtitle="Manage tags"
+              title={t('category', language)}
+              subtitle={t('manageTags', language)}
               icon="pricetags"
               color="#9D4EDD" // CashWise Purple
               onPress={() => navigation.navigate('Categories')}
@@ -186,8 +190,8 @@ const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
           {/* 3. Export Data */}
           <View style={styles.gridItem}>
             <ToolCard
-              title={exporting ? 'Exporting...' : 'Export CSV'}
-              subtitle="Get your data"
+              title={exporting ? t('saving', language) : t('exportCSV', language)}
+              subtitle={t('getYourData', language)}
               icon="download"
               color="#F5C518" // CashWise Gold
               onPress={handleExport}
@@ -198,8 +202,8 @@ const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
           {/* 4. Sign Out */}
           <View style={styles.gridItem}>
             <ToolCard
-              title="Sign Out"
-              subtitle="Log out safely"
+              title={t('signOut', language)}
+              subtitle={t('logOutSafely', language)}
               icon="log-out"
               color="#FF6B6B" // Danger Red
               onPress={handleSignOut}
@@ -208,7 +212,7 @@ const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
         </View>
 
         <Text style={[styles.versionText, { color: subTextColor }]}>
-          Version 1.0.0
+          {t('version', language)} 1.0.0
         </Text>
       </ScrollView>
     </SafeAreaView>

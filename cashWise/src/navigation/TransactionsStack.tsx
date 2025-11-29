@@ -2,9 +2,11 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import TransactionsScreen from '../screens/TransactionsScreen';
 import EditTransactionScreen from '../screens/EditTransactionScreen';
+import AddTransactionScreen from '../screens/AddTransactionScreen';
 
 export type TransactionsStackParamList = {
   TransactionsList: undefined;
+  AddTransaction: undefined;
   EditTransaction: {
     id: string;
     date: string; // 'YYYY-MM-DD'
@@ -25,6 +27,11 @@ const TransactionsStack: React.FC = () => {
         name="EditTransaction"
         component={EditTransactionScreen}
         options={{ title: 'Edit Transaction' }}
+      />
+      <Stack.Screen
+        name="AddTransaction"
+        component={AddTransactionScreen}
+        options={{ title: 'New Transaction', presentation: 'modal' }}
       />
     </Stack.Navigator>
   );

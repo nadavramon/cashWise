@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
+import { t } from '../../../utils/i18n';
 
 export type OverviewMode = 'DASHBOARD' | 'SPENDING' | 'LIST';
 
@@ -7,45 +8,8 @@ interface OverviewModeSwitcherProps {
     currentMode: OverviewMode;
     onModeChange: (mode: OverviewMode) => void;
     themeColor: string;
+    language?: string;
 }
-
-const OverviewModeSwitcher: React.FC<OverviewModeSwitcherProps> = ({
-    currentMode,
-    onModeChange,
-    themeColor
-}) => {
-    const isDarkMode = useColorScheme() === 'dark';
-    const textColor = isDarkMode ? '#FFFFFF' : '#333333';
-
-    return (
-        <View style={styles.modeRow}>
-            <ModeButton
-                label="Dashboard"
-                active={currentMode === 'DASHBOARD'}
-                onPress={() => onModeChange('DASHBOARD')}
-                themeColor={themeColor}
-                textColor={textColor}
-                isDarkMode={isDarkMode}
-            />
-            <ModeButton
-                label="Spending"
-                active={currentMode === 'SPENDING'}
-                onPress={() => onModeChange('SPENDING')}
-                themeColor={themeColor}
-                textColor={textColor}
-                isDarkMode={isDarkMode}
-            />
-            <ModeButton
-                label="List"
-                active={currentMode === 'LIST'}
-                onPress={() => onModeChange('LIST')}
-                themeColor={themeColor}
-                textColor={textColor}
-                isDarkMode={isDarkMode}
-            />
-        </View>
-    );
-};
 
 interface ModeButtonProps {
     label: string;
@@ -60,16 +24,16 @@ const ModeButton: React.FC<ModeButtonProps> = ({ label, active, onPress, themeCo
     <TouchableOpacity
         style={[
             styles.modeButton,
-            { borderColor: isDarkMode ? '#444' : '#ccc' },
-            active && { backgroundColor: themeColor + '20', borderColor: themeColor }
+            { borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)' },
+            active && { backgroundColor: themeColor }
         ]}
         onPress={onPress}
     >
         <Text
             style={[
-                styles.modeButtonText,
+                styles.modeText,
                 { color: textColor },
-                active && { color: themeColor, fontWeight: '600' },
+                active && { color: '#FFF', fontWeight: '600' },
             ]}
         >
             {label}
@@ -77,11 +41,49 @@ const ModeButton: React.FC<ModeButtonProps> = ({ label, active, onPress, themeCo
     </TouchableOpacity>
 );
 
+const OverviewModeSwitcher: React.FC<OverviewModeSwitcherProps> = ({
+    currentMode,
+    onModeChange,
+    themeColor,
+    language = 'en'
+}) => {
+    const isDarkMode = useColorScheme() === 'dark';
+    const subTextColor = isDarkMode ? '#FFFFFF' : '#333333';
+
+    return (
+        <View style={styles.modeContainer}>
+            <ModeButton
+                label={t('modeDashboard', language)}
+                active={currentMode === 'DASHBOARD'}
+                onPress={() => onModeChange('DASHBOARD')}
+                themeColor={themeColor}
+                textColor={subTextColor}
+                isDarkMode={isDarkMode}
+            />
+            <ModeButton
+                label={t('modeSpending', language)}
+                active={currentMode === 'SPENDING'}
+                onPress={() => onModeChange('SPENDING')}
+                themeColor={themeColor}
+                textColor={subTextColor}
+                isDarkMode={isDarkMode}
+            />
+            <ModeButton
+                label={t('modeList', language)}
+                active={currentMode === 'LIST'}
+                onPress={() => onModeChange('LIST')}
+                themeColor={themeColor}
+                textColor={subTextColor}
+                isDarkMode={isDarkMode}
+            />
+        </View>
+    );
+};
+
 const styles = StyleSheet.create({
-    modeRow: {
+    modeContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginVertical: 16,
+        marginBottom: 24,
         gap: 8,
     },
     modeButton: {
@@ -89,9 +91,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: 8,
         borderRadius: 20,
+        borderWidth: 1,
     },
-    modeButtonText: {
-        fontSize: 18,
+    modeText: {
+        fontSize: 14,
         fontWeight: '600',
     },
 });
