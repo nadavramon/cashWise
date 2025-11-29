@@ -1,0 +1,102 @@
+// src/api/categoriesApi.ts
+import { graphqlClient } from './graphqlClient';
+import {
+  CREATE_CATEGORY,
+  LIST_CATEGORIES,
+  DELETE_CATEGORY,
+  UPDATE_CATEGORY,
+} from './operations';
+
+export type CategoryTypeApi = 'INCOME' | 'EXPENSE';
+
+export interface CategoryApi {
+  id: string;
+  userId: string;
+  name: string;
+  type: CategoryTypeApi;
+  color?: string | null;
+  createdAt: string;
+}
+
+export interface CreateCategoryInputApi {
+  name: string;
+  type: CategoryTypeApi;
+  color?: string | null;
+}
+
+export interface UpdateCategoryInputApi {
+  id: string;
+  name?: string;
+  type?: CategoryTypeApi;
+  color?: string | null;
+}
+interface CreateCategoryResponse {
+  createCategory: CategoryApi;
+}
+
+interface ListCategoriesResponse {
+  listCategories: CategoryApi[];
+}
+
+interface DeleteCategoryResponse {
+  deleteCategory: boolean;
+}
+
+interface UpdateCategoryResponse {
+  updateCategory: boolean;
+}
+
+export async function apiCreateCategory(
+  input: CreateCategoryInputApi,
+): Promise<CategoryApi> {
+  const result = await graphqlClient.graphql<CreateCategoryResponse>({
+    query: CREATE_CATEGORY,
+    variables: { input },
+  });
+
+  if (!('data' in result) || !result.data?.createCategory) {
+    throw new Error('createCategory returned no data');
+  }
+
+  return result.data.createCategory;
+}
+
+export async function apiListCategories(): Promise<CategoryApi[]> {
+  const result = await graphqlClient.graphql<ListCategoriesResponse>({
+    query: LIST_CATEGORIES,
+  });
+
+  if (!('data' in result) || !result.data?.listCategories) {
+    throw new Error('listCategories returned no data');
+  }
+
+  return result.data.listCategories;
+}
+
+export async function apiDeleteCategory(id: string): Promise<boolean> {
+  const result = await graphqlClient.graphql<DeleteCategoryResponse>({
+    query: DELETE_CATEGORY,
+    variables: { id },
+  });
+
+  if (!('data' in result) || typeof result.data?.deleteCategory !== 'boolean') {
+    throw new Error('deleteCategory returned no data');
+  }
+
+  return result.data.deleteCategory;
+}
+
+export async function apiUpdateCategory(
+  input: UpdateCategoryInputApi,
+): Promise<boolean> {
+  const result = await graphqlClient.graphql<UpdateCategoryResponse>({
+    query: UPDATE_CATEGORY,
+    variables: { input },
+  });
+
+  if (!('data' in result) || typeof result.data?.updateCategory !== 'boolean') {
+    throw new Error('updateCategory returned no data');
+  }
+
+  return result.data.updateCategory;
+}

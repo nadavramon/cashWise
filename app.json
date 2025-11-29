@@ -1,11 +1,11 @@
 {
   "expo": {
     "name": "cashWise",
-    "slug": "cashWise",
+    "slug": "cashwise",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -24,6 +24,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "a2441539-633e-4e88-a4b6-3418349d5e17"
+      }
+    },
+    "owner": "nadavramon"
   }
 }
