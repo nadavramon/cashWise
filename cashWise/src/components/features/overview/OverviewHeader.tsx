@@ -2,11 +2,12 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
 
 interface OverviewHeaderProps {
-    dateRange: { fromDate: string; toDate: string };
+    title?: string;
+    dateRange?: { fromDate: string; toDate: string };
     themeColor: string;
 }
 
-const OverviewHeader: React.FC<OverviewHeaderProps> = ({ dateRange, themeColor }) => {
+const OverviewHeader: React.FC<OverviewHeaderProps> = ({ title, dateRange, themeColor }) => {
     const isDarkMode = useColorScheme() === 'dark';
     const textColor = isDarkMode ? '#FFFFFF' : '#333333';
     const subTextColor = isDarkMode ? '#CCCCCC' : '#666666';
@@ -14,9 +15,14 @@ const OverviewHeader: React.FC<OverviewHeaderProps> = ({ dateRange, themeColor }
     return (
         <View style={styles.headerRow}>
             <View style={styles.titleContainer}>
-                <Text style={[styles.headerSubtitle, { color: subTextColor }]}>
-                    {dateRange.fromDate} → {dateRange.toDate}
-                </Text>
+                {title && (
+                    <Text style={[styles.headerTitle, { color: textColor }]}>{title}</Text>
+                )}
+                {dateRange && (
+                    <Text style={[styles.headerSubtitle, { color: subTextColor }]}>
+                        {dateRange.fromDate} → {dateRange.toDate}
+                    </Text>
+                )}
             </View>
         </View>
     );
@@ -31,6 +37,12 @@ const styles = StyleSheet.create({
     },
     titleContainer: {
         alignItems: 'center',
+    },
+    headerTitle: {
+        fontSize: 28,
+        fontWeight: '700',
+        marginBottom: 4,
+        textAlign: 'center',
     },
     headerSubtitle: { fontSize: 13 },
     addButton: {

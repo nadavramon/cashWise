@@ -17,7 +17,7 @@ const BudgetModeSwitcher: React.FC<BudgetModeSwitcherProps> = ({
     const subTextColor = isDark ? '#CCCCCC' : '#666666';
 
     return (
-        <View style={styles.modeContainer}>
+        <View style={styles.modeRow}>
             {(['PLAN', 'REMAINING', 'INSIGHTS'] as BudgetMode[]).map((m) => (
                 <TouchableOpacity
                     key={m}
@@ -30,7 +30,7 @@ const BudgetModeSwitcher: React.FC<BudgetModeSwitcherProps> = ({
                 >
                     <Text
                         style={[
-                            styles.modeText,
+                            styles.modeButtonText,
                             { color: currentMode === m ? '#FFF' : subTextColor },
                         ]}
                     >
@@ -43,17 +43,19 @@ const BudgetModeSwitcher: React.FC<BudgetModeSwitcherProps> = ({
 };
 
 const styles = StyleSheet.create({
-    modeContainer: {
+    modeRow: {
         flexDirection: 'row',
-        marginBottom: 24,
+        justifyContent: 'space-between',
+        marginVertical: 16,
         gap: 8,
     },
     modeButton: {
+        flex: 1,
+        alignItems: 'center',
         paddingVertical: 8,
-        paddingHorizontal: 16,
         borderRadius: 20,
     },
-    modeText: {
+    modeButtonText: {
         fontSize: 18,
         fontWeight: '600',
     },

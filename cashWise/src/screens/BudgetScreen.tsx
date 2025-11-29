@@ -20,10 +20,11 @@ import BudgetCard from '../components/features/budget/BudgetCard';
 import CategorySection from '../components/features/budget/CategorySection';
 import AddBudgetModal from '../components/features/budget/AddBudgetModal';
 import SubCategoryModal from '../components/features/budget/SubCategoryModal';
+import OverviewHeader from '../components/features/overview/OverviewHeader';
 
 const BudgetScreen: React.FC = () => {
   const isDark = useColorScheme() === 'dark';
-  const { transactions } = useTransactions();
+  const { transactions, dateRange } = useTransactions();
   const { profile } = useProfile();
   const currencySymbol = getCurrencySymbol(profile?.currency);
 
@@ -90,7 +91,7 @@ const BudgetScreen: React.FC = () => {
     <GradientBackground>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
-          <Text style={[styles.title, { color: textColor }]}>Budget</Text>
+          <OverviewHeader title="Budget" themeColor={themeColor} />
 
           <BudgetModeSwitcher
             currentMode={mode}
@@ -166,12 +167,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
+
   contentContainer: {
     paddingBottom: 40,
   },
