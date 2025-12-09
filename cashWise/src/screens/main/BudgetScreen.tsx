@@ -7,21 +7,21 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import GradientBackground from '../components/GradientBackground';
-import { useTransactions } from '../store/TransactionsContext';
-import { useProfile } from '../store/ProfileContext';
-import { getCurrencySymbol } from '../utils/currency';
-import { RepoCategoryGroup, RepoCategoryItem } from '../data/categoryRepo';
-import { BudgetMode, PlannedBudgetItem } from '../types/budget';
-import { t } from '../utils/i18n';
+import GradientBackground from '../../components/GradientBackground';
+import { useTransactions } from '../../context/TransactionsContext';
+import { useProfile } from '../../context/ProfileContext';
+import { getCurrencySymbol } from '../../utils/currency';
+import { RepoCategoryGroup, RepoCategoryItem } from '../../data/categoryRepo';
+import { BudgetMode, PlannedBudgetItem } from '../../types/budget';
+import { t } from '../../config/i18n';
 
 // Feature Components
-import BudgetModeSwitcher from '../components/features/budget/BudgetModeSwitcher';
-import BudgetCard from '../components/features/budget/BudgetCard';
-import CategorySection from '../components/features/budget/CategorySection';
-import AddBudgetModal from '../components/features/budget/AddBudgetModal';
-import SubCategoryModal from '../components/features/budget/SubCategoryModal';
-import OverviewHeader from '../components/features/overview/OverviewHeader';
+import BudgetModeSwitcher from '../../components/features/budget/BudgetModeSwitcher';
+import BudgetCard from '../../components/features/budget/BudgetCard';
+import CategorySection from '../../components/features/budget/CategorySection';
+import AddBudgetModal from '../../components/features/budget/AddBudgetModal';
+import SubCategoryModal from '../../components/features/budget/SubCategoryModal';
+import OverviewHeader from '../../components/features/overview/OverviewHeader';
 
 const BudgetScreen: React.FC = () => {
   const isDark = useColorScheme() === 'dark';

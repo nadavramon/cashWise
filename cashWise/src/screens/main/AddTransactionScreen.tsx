@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, useColorScheme } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { TransactionsStackParamList } from '../navigation/TransactionsStack';
-import TransactionForm from '../components/TransactionForm';
+import { TransactionsStackParamList } from '../../navigation/TransactionsStack';
+import TransactionForm from '../../components/features/transactions/TransactionForm';
 
 type Props = NativeStackScreenProps<TransactionsStackParamList, 'AddTransaction'>;
 

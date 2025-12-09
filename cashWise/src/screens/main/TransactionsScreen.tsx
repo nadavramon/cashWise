@@ -1,14 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, Button, Alert, Linking } from 'react-native';
-import { useCategories } from '../store/CategoriesContext';
-import { useTransactions } from '../store/TransactionsContext';
-import { useProfile } from '../store/ProfileContext';
-import { getCurrencySymbol } from '../utils/currency';
+import { useCategories } from '../../context/CategoriesContext';
+import { useTransactions } from '../../context/TransactionsContext';
+import { useProfile } from '../../context/ProfileContext';
+import { getCurrencySymbol } from '../../utils/currency';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { TransactionsStackParamList } from '../navigation/TransactionsStack';
+import { TransactionsStackParamList } from '../../navigation/TransactionsStack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { apiExportTransactions } from '../api/exportsApi';
-import { t } from '../utils/i18n';
+import { apiExportTransactions } from '../../api/exportsApi';
+import { t } from '../../config/i18n';
 
 type Props = NativeStackScreenProps<TransactionsStackParamList, 'TransactionsList'>;
 

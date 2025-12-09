@@ -12,6 +12,7 @@ import { Transaction as ApiTransaction, TransactionType as ApiTransactionType } 
 import { Transaction } from '../types/models';
 import { graphqlClient } from '../api/graphqlClient';
 import { LIST_TRANSACTIONS } from '../api/operations';
+import { DateRangePresetApi } from '../api/profileApi';
 
 /*
   Cycle Calculation Logic:
@@ -78,10 +79,14 @@ export const OverviewCycleProvider: React.FC<{ children: ReactNode }> = ({
         if (!profile) return;
 
         // @ts-ignore
-        const { billingCycleStartDay } = profile;
+        const { billingCycleStartDay, defaultDateRangePreset } = profile;
+        // Default to CURRENT_CYCLE if missing (type cast/checking handled in getCycleRange)
+        const preset = (defaultDateRangePreset as DateRangePresetApi) || 'CURRENT_CYCLE';
+
         const { start: s, endExclusive: e } = getCycleRangeForDate(
             new Date(),
             { startDay: billingCycleStartDay ?? 1 },
+            preset,
             offset
         );
 
@@ -91,7 +96,7 @@ export const OverviewCycleProvider: React.FC<{ children: ReactNode }> = ({
         setError(null);
 
         try {
-            console.log(`Fetching transactions from ${s} to ${e}`);
+            console.log(`Fetching transactions from ${s} to ${e} (Preset: ${preset}, Offset: ${offset})`);
             const result = await graphqlClient.graphql<ListTransactionsResponse>({
                 query: LIST_TRANSACTIONS,
                 variables: { fromDate: s, toDate: e }
@@ -110,6 +115,13 @@ export const OverviewCycleProvider: React.FC<{ children: ReactNode }> = ({
             setLoading(false);
         }
     }, [profile, offset]);
+
+    // Reset offset when specific profile fields change
+    useEffect(() => {
+        if (profile?.defaultDateRangePreset) {
+            setOffset(0);
+        }
+    }, [profile?.defaultDateRangePreset]);
 
     useEffect(() => {
         fetchTransactions();

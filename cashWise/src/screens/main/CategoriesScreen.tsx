@@ -11,9 +11,9 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context'; // Import SafeAreaView
 
-import { useCategories } from '../store/CategoriesContext';
-import { CATEGORY_REPO, RepoCategoryItem } from '../data/categoryRepo';
-import { Category } from '../types/models';
+import { useCategories } from '../../context/CategoriesContext';
+import { CATEGORY_REPO, RepoCategoryItem } from '../../data/categoryRepo';
+import { Category } from '../../types/models';
 
 const isItemAlreadyAdded = (
   categories: Category[],

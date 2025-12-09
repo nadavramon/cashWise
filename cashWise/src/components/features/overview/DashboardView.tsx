@@ -12,8 +12,8 @@ import {
     Easing
 } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
-import { useOverviewCycle } from '../../../store/CycleContext';
-import { useProfile } from '../../../store/ProfileContext';
+import { useOverviewCycle } from '../../../context/CycleContext';
+import { useProfile } from '../../../context/ProfileContext';
 import { groupDailySpending, computePeriodTotals, buildDateRangeArray } from '../../../utils/overview';
 import { getCurrencySymbol } from '../../../utils/currency';
 

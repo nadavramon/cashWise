@@ -7,11 +7,11 @@ import BottomTabs from './src/navigation/BottomTabs';
 import AuthStack from './src/navigation/AuthStack';
 
 import { getCurrentUser } from 'aws-amplify/auth';
-import AuthContext from './src/store/AuthContext';
+import AuthContext from './src/context/AuthContext';
 import { extractUserId, extractUserEmail, extractUsername } from './src/utils/authUser';
-import { TransactionsProvider } from './src/store/TransactionsContext';
-import { CategoriesProvider } from './src/store/CategoriesContext';
-import { ProfileProvider } from './src/store/ProfileContext';
+import { TransactionsProvider } from './src/context/TransactionsContext';
+import { CategoriesProvider } from './src/context/CategoriesContext';
+import { ProfileProvider } from './src/context/ProfileContext';
 
 // Import your wrapper
 import GradientBackground from './src/components/GradientBackground';

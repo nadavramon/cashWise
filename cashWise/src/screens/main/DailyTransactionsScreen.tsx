@@ -13,13 +13,13 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 
-import type { OverviewStackParamList } from '../navigation/OverviewStack';
-import { useTransactions } from '../store/TransactionsContext';
-import { useCategories } from '../store/CategoriesContext';
-import { useProfile } from '../store/ProfileContext';
-import TransactionForm from '../components/TransactionForm';
-import type { Transaction } from '../types/models';
-import { t } from '../utils/i18n';
+import type { OverviewStackParamList } from '../../navigation/OverviewStack';
+import { useTransactions } from '../../context/TransactionsContext';
+import { useCategories } from '../../context/CategoriesContext';
+import { useProfile } from '../../context/ProfileContext';
+import TransactionForm from '../../components/features/transactions/TransactionForm';
+import type { Transaction } from '../../types/models';
+import { t } from '../../config/i18n';
 
 type DailyRoute = RouteProp<OverviewStackParamList, 'DailyTransactions'>;
 

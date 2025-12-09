@@ -18,6 +18,8 @@ export const TRANSLATIONS = {
         error: 'Error',
         failedToSave: 'Failed to save profile.',
         loading: 'Loading profile...',
+        billingCycleStartDay: 'Billing Cycle Start Day (1-31)',
+        invalidStartDay: 'Billing cycle start day must be between 1 and 31',
         // Add more keys as needed for other screens
 
         // Navigation
@@ -138,6 +140,8 @@ export const TRANSLATIONS = {
         error: 'שגיאה',
         failedToSave: 'שמירת הפרופיל נכשלה.',
         loading: 'טוען פרופיל...',
+        billingCycleStartDay: 'יום תחילת מחזור חיוב',
+        invalidStartDay: 'יום תחילת מחזור חייב להיות בין 1 ל-31',
 
         // Navigation
         navOverview: 'מבט על',

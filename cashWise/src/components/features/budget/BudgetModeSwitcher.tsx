@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
 import { BudgetMode } from '../../../types/budget';
-import { t } from '../../../utils/i18n';
+import { t } from '../../../config/i18n';
 
 interface BudgetModeSwitcherProps {
     currentMode: BudgetMode;

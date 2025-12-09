@@ -1,9 +1,9 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import ToolsScreenMain from '../screens/ToolsScreenMain';
-import ProfileScreen from '../screens/ProfileScreen';
-import CategoriesScreen from '../screens/CategoriesScreen';
-import ManualCategoryScreen from '../screens/ManualCategoryScreen';
+import ToolsScreenMain from '../screens/main/ToolsScreenMain';
+import ProfileScreen from '../screens/main/ProfileScreen';
+import CategoriesScreen from '../screens/main/CategoriesScreen';
+import ManualCategoryScreen from '../screens/main/ManualCategoryScreen';
 
 export type ToolsStackParamList = {
   ToolsHome: undefined;
@@ -14,8 +14,8 @@ export type ToolsStackParamList = {
 
 const Stack = createNativeStackNavigator<ToolsStackParamList>();
 
-import { t } from '../utils/i18n';
-import { useProfile } from '../store/ProfileContext';
+import { t } from '../config/i18n';
+import { useProfile } from '../context/ProfileContext';
 
 const ToolsStack: React.FC = () => {
   const { profile } = useProfile();

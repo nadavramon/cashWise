@@ -14,12 +14,12 @@ import {
   Platform,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { TransactionsStackParamList } from '../navigation/TransactionsStack';
-import { useTransactions } from '../store/TransactionsContext';
-import { useCategories } from '../store/CategoriesContext';
-import { Transaction } from '../types/models';
-import { t } from '../utils/i18n';
-import { useProfile } from '../store/ProfileContext';
+import { TransactionsStackParamList } from '../../navigation/TransactionsStack';
+import { useTransactions } from '../../context/TransactionsContext';
+import { useCategories } from '../../context/CategoriesContext';
+import { Transaction } from '../../types/models';
+import { t } from '../../config/i18n';
+import { useProfile } from '../../context/ProfileContext';
 
 type Props = NativeStackScreenProps<
   TransactionsStackParamList,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
-import { t } from '../../../utils/i18n';
+import { t } from '../../../config/i18n';
 
 export type OverviewMode = 'DASHBOARD' | 'SPENDING' | 'LIST';
 

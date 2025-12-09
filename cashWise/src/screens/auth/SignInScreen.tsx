@@ -10,8 +10,8 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { signIn, getCurrentUser, resendSignUpCode } from 'aws-amplify/auth';
-import { AuthStackParamList } from '../navigation/AuthStack';
-import { useAuth } from '../store/AuthContext';
+import { AuthStackParamList } from '../../navigation/AuthStack';
+import { useAuth } from '../../context/AuthContext';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignIn'>;
 

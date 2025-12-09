@@ -9,11 +9,11 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import { useCategories } from '../store/CategoriesContext';
-import { Category } from '../types/models';
+import { useCategories } from '../../context/CategoriesContext';
+import { Category } from '../../types/models';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { t } from '../utils/i18n';
-import { useProfile } from '../store/ProfileContext';
+import { t } from '../../config/i18n';
+import { useProfile } from '../../context/ProfileContext';
 
 const ManualCategoryScreen: React.FC = () => {
   const { categories, loading, addCategory, deleteCategory, updateCategory } =

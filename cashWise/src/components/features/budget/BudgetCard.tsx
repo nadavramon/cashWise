@@ -13,8 +13,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { PieChart } from 'react-native-chart-kit';
 import { CATEGORY_REPO } from '../../../data/categoryRepo';
 import { PlannedBudgetItem } from '../../../types/budget';
-import { t } from '../../../utils/i18n';
-import { useProfile } from '../../../store/ProfileContext';
+import { t } from '../../../config/i18n';
+import { useProfile } from '../../../context/ProfileContext';
 
 // Enable LayoutAnimation on Android
 if (

@@ -2,13 +2,15 @@ import React, { useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StyleSheet, Platform, View, useWindowDimensions, TouchableOpacity, Text } from 'react-native';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
-import { OverviewStackNavigator } from './OverviewStack';
-import BudgetScreen from '../screens/BudgetScreen';
+// Stacks
+import OverviewStack from './OverviewStack';
+import TransactionsStack from './TransactionsStack';
 import ToolsStack from './ToolsStack';
+import BudgetScreen from '../screens/main/BudgetScreen';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming, withSpring } from 'react-native-reanimated';
-import { useProfile } from '../store/ProfileContext';
-import { t } from '../utils/i18n';
+import { useProfile } from '../context/ProfileContext';
+import { t } from '../config/i18n';
 
 export type RootTabParamList = {
   Overview: undefined;
@@ -158,7 +160,7 @@ const BottomTabs: React.FC = () => {
     >
       <Tab.Screen
         name="Overview"
-        component={OverviewStackNavigator}
+        component={OverviewStack}
         options={{
           tabBarIcon: ({ color }) => (
             <MaterialIcons name="space-dashboard" size={24} color={color} />

@@ -14,19 +14,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 // import { useTransactions } from '../store/TransactionsContext'; // Replaced by useCycle
-import { useProfile } from '../store/ProfileContext';
+import { useProfile } from '../../context/ProfileContext';
 
-import { OverviewCycleProvider, useOverviewCycle } from '../store/CycleContext';
-import TransactionForm from '../components/TransactionForm';
-import type { OverviewStackParamList } from '../navigation/OverviewStack';
-import { t as translate } from '../utils/i18n';
+import { OverviewCycleProvider, useOverviewCycle } from '../../context/CycleContext';
+import TransactionForm from '../../components/features/transactions/TransactionForm';
+import type { OverviewStackParamList } from '../../navigation/OverviewStack';
+import { t as translate } from '../../config/i18n';
 
 // Feature Components
-import OverviewHeader from '../components/features/overview/OverviewHeader';
-import OverviewModeSwitcher, { OverviewMode } from '../components/features/overview/OverviewModeSwitcher';
-import DashboardView from '../components/features/overview/DashboardView';
-import SpendingView from '../components/features/overview/SpendingView';
-import TransactionList from '../components/features/overview/TransactionList';
+import OverviewHeader from '../../components/features/overview/OverviewHeader';
+import OverviewModeSwitcher, { OverviewMode } from '../../components/features/overview/OverviewModeSwitcher';
+import DashboardView from '../../components/features/overview/DashboardView';
+import SpendingView from '../../components/features/overview/SpendingView';
+import TransactionList from '../../components/features/overview/TransactionList';
 
 type Nav = NativeStackNavigationProp<OverviewStackParamList, 'OverviewMain'>;
 

@@ -14,10 +14,10 @@ import {
   useColorScheme,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useCategories } from '../store/CategoriesContext';
-import { useTransactions } from '../store/TransactionsContext';
-import { t } from '../utils/i18n';
-import { useProfile } from '../store/ProfileContext';
+import { useCategories } from '../../../context/CategoriesContext';
+import { useTransactions } from '../../../context/TransactionsContext';
+import { t } from '../../../config/i18n';
+import { useProfile } from '../../../context/ProfileContext';
 
 const todayAsString = () => {
   const d = new Date();

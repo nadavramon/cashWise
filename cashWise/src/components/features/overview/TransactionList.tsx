@@ -3,10 +3,10 @@ import { View, Text, FlatList, StyleSheet, useColorScheme, TouchableOpacity, Ani
 import { Swipeable } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { Transaction } from '../../../types/models';
-import { useCategories } from '../../../store/CategoriesContext';
-import { useTransactions } from '../../../store/TransactionsContext';
+import { useCategories } from '../../../context/CategoriesContext';
+import { useTransactions } from '../../../context/TransactionsContext';
 
-import { useOverviewCycle } from '../../../store/CycleContext';
+import { useOverviewCycle } from '../../../context/CycleContext';
 
 interface TransactionListProps {
     // transactions provided by context

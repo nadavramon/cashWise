@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, useColorScheme, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
-import { CASHWISE_COLORS } from '../utils/themes';
+import { CASHWISE_COLORS } from '../config/themes';
 
 interface GradientBackgroundProps {
     children: React.ReactNode;

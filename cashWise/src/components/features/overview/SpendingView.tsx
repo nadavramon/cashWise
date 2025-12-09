@@ -13,9 +13,9 @@ import {
 import { PieChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
 
-import { useOverviewCycle } from '../../../store/CycleContext';
-import { useProfile } from '../../../store/ProfileContext';
-import { useCategories } from '../../../store/CategoriesContext';
+import { useOverviewCycle } from '../../../context/CycleContext';
+import { useProfile } from '../../../context/ProfileContext';
+import { useCategories } from '../../../context/CategoriesContext';
 import { computePeriodTotals, groupDailySpending } from '../../../utils/overview';
 import { getCurrencySymbol } from '../../../utils/currency';
 import { Category } from '../../../types/models';
