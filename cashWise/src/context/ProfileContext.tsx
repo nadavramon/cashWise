@@ -18,7 +18,8 @@ export interface UserProfile {
   email: string;
   createdAt: string;
   currency?: string;
-  defaultDateRangePreset?: string;
+  overviewDateRangePreset?: string;
+  budgetDateRangePreset?: string;
   language?: string;
   firstName?: string;
   lastName?: string;
@@ -51,7 +52,8 @@ const mapApiToProfile = (p: UserProfileApi): UserProfile => ({
   email: p.email || '',
   createdAt: p.createdAt,
   currency: p.currency ?? undefined,
-  defaultDateRangePreset: p.overviewDateRangePreset ?? undefined,
+  overviewDateRangePreset: p.overviewDateRangePreset ?? undefined,
+  budgetDateRangePreset: p.budgetDateRangePreset ?? undefined,
   language: p.language ?? undefined,
   firstName: p.firstName ?? undefined,
   lastName: p.lastName ?? undefined,

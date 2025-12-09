@@ -79,9 +79,9 @@ export const OverviewCycleProvider: React.FC<{ children: ReactNode }> = ({
         if (!profile) return;
 
         // @ts-ignore
-        const { billingCycleStartDay, defaultDateRangePreset } = profile;
+        const { billingCycleStartDay, overviewDateRangePreset } = profile;
         // Default to CURRENT_CYCLE if missing (type cast/checking handled in getCycleRange)
-        const preset = (defaultDateRangePreset as DateRangePresetApi) || 'CURRENT_CYCLE';
+        const preset = (overviewDateRangePreset as DateRangePresetApi) || 'CURRENT_CYCLE';
 
 
         const { start: s, endExclusive: e } = getCycleRangeForDate(
@@ -119,10 +119,10 @@ export const OverviewCycleProvider: React.FC<{ children: ReactNode }> = ({
 
     // Reset offset when specific profile fields change
     useEffect(() => {
-        if (profile?.defaultDateRangePreset) {
+        if (profile?.overviewDateRangePreset) {
             setOffset(0);
         }
-    }, [profile?.defaultDateRangePreset]);
+    }, [profile?.overviewDateRangePreset]);
 
     useEffect(() => {
         fetchTransactions();

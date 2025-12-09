@@ -186,7 +186,7 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     if (!profile) return;
 
-    const targetPreset = (profile.defaultDateRangePreset as DateRangePreset) || 'CURRENT_CYCLE';
+    const targetPreset = (profile.overviewDateRangePreset as DateRangePreset) || 'CURRENT_CYCLE';
 
     const startDay = profile.billingCycleStartDay || 1;
 

@@ -44,7 +44,7 @@ const ProfileScreen: React.FC = () => {
     setLastName(profile.lastName ?? '');
     setCurrency(profile.currency ?? 'ILS');
     setStartDay(String(profile.billingCycleStartDay ?? 1));
-    setDefaultPreset((profile.defaultDateRangePreset as DateRangePresetApi) ?? 'CURRENT_CYCLE');
+    setDefaultPreset((profile.overviewDateRangePreset as DateRangePresetApi) ?? 'CURRENT_CYCLE');
     setLanguage(profile.language ?? 'en');
   }, [profile]);
 
