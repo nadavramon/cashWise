@@ -13,29 +13,18 @@ import {
 import { PieChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
 
+import { useOverviewCycle } from '../../../store/CycleContext';
+import { useProfile } from '../../../store/ProfileContext';
+import { useCategories } from '../../../store/CategoriesContext';
+import { computePeriodTotals, groupDailySpending } from '../../../utils/overview';
+import { getCurrencySymbol } from '../../../utils/currency';
+import { Category } from '../../../types/models';
+
 interface SpendingViewProps {
-    totals: { income: number; expenses: number };
-    cycleBudget: number;
-    filter: 'EXPENSES' | 'INCOME' | 'SAVINGS';
-    setFilter: (filter: 'EXPENSES' | 'INCOME' | 'SAVINGS') => void;
-    spendingChartData: any[];
-    pieData: any[];
-    totalAmount: number;
-    chartConfig: any;
-    formatAmount: (amount: number) => string;
     themeColor: string;
 }
 
 const SpendingView: React.FC<SpendingViewProps> = ({
-    totals,
-    cycleBudget,
-    filter,
-    setFilter,
-    spendingChartData,
-    pieData,
-    totalAmount,
-    chartConfig,
-    formatAmount,
     themeColor
 }) => {
     const isDarkMode = useColorScheme() === 'dark';
@@ -47,7 +36,80 @@ const SpendingView: React.FC<SpendingViewProps> = ({
     const { width } = Dimensions.get('window');
     const [showFilterMenu, setShowFilterMenu] = useState(false);
 
+    // --- State ---
+    const [filter, setFilter] = useState<'EXPENSES' | 'INCOME' | 'SAVINGS'>('EXPENSES');
+
+    // --- Context ---
+    const { transactions } = useOverviewCycle();
+    const { profile } = useProfile();
+    const { categories } = useCategories();
+
+    const currencySymbol = getCurrencySymbol(profile?.currency);
+    const formatAmount = (amount: number) => `${currencySymbol}${amount.toFixed(2)}`;
+    const cycleBudget = 5000; // Hardcoded for now, as in OverviewScreen
+
+    // --- Data Derivation ---
+    const totals = React.useMemo(() => computePeriodTotals(transactions), [transactions]);
+
+    // Breakdown Logic (Pie + List)
+    // Filter transactions
+    const filteredTransactions = React.useMemo(() => {
+        return transactions.filter(t => {
+            if (filter === 'EXPENSES') return t.type === 'expense';
+            if (filter === 'INCOME') return t.type === 'income';
+            // Savings todo
+            return false;
+        });
+    }, [transactions, filter]);
+
+    const totalAmount = React.useMemo(() => {
+        return filteredTransactions.reduce((sum, t) => sum + t.amount, 0);
+    }, [filteredTransactions]);
+
+    // Group by Category
+    const spendingChartData = React.useMemo(() => {
+        const map = new Map<string, number>();
+        filteredTransactions.forEach(t => {
+            map.set(t.categoryId, (map.get(t.categoryId) || 0) + t.amount);
+        });
+
+        // Convert to array
+        const result = Array.from(map.entries()).map(([catId, amount]) => {
+            const cat = categories.find(c => c.id === catId);
+            return {
+                name: cat?.name ?? 'Uncategorized',
+                total: amount,
+                color: cat?.color ?? '#999',
+                legendFontColor: subTextColor,
+                legendFontSize: 12,
+                categoryId: catId
+            };
+        });
+
+        // Sort DESC
+        return result.sort((a, b) => b.total - a.total);
+    }, [filteredTransactions, categories, subTextColor]);
+
+    const pieData = React.useMemo(() => {
+        return spendingChartData.map(item => ({
+            name: item.name,
+            population: item.total,
+            color: item.color,
+            legendFontColor: item.legendFontColor,
+            legendFontSize: item.legendFontSize
+        }));
+    }, [spendingChartData]);
+
+    const chartConfig = React.useMemo(() => ({
+        color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, // Only for pie labels?
+    }), []);
+
     const dynamicCardStyle = [styles.card, { backgroundColor: cardBg, borderColor: cardBorder }];
+
+    // Render... uses local variables now.
+    // Need to pass themeColor to render.
+    // The existing JSX uses 'totals', 'cycleBudget', 'filter', 'spendingChartData', 'pieData', 'totalAmount'.
+    // These are now all local.
 
     return (
         <ScrollView contentContainerStyle={styles.scrollContent}>

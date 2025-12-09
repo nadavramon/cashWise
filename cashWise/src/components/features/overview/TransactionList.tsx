@@ -6,8 +6,10 @@ import { Transaction } from '../../../types/models';
 import { useCategories } from '../../../store/CategoriesContext';
 import { useTransactions } from '../../../store/TransactionsContext';
 
+import { useOverviewCycle } from '../../../store/CycleContext';
+
 interface TransactionListProps {
-    transactions: Transaction[];
+    // transactions provided by context
 }
 
 const AnimatedTransactionRow: React.FC<{
@@ -83,8 +85,9 @@ const AnimatedTransactionRow: React.FC<{
     );
 };
 
-const TransactionList: React.FC<TransactionListProps> = ({ transactions }) => {
+const TransactionList: React.FC<TransactionListProps> = () => {
     const { deleteTransaction } = useTransactions();
+    const { transactions } = useOverviewCycle();
 
     const renderListItem = ({ item }: { item: Transaction }) => {
         return (

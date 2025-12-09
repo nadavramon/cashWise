@@ -8,9 +8,9 @@ import React, {
 import { useAuth } from './AuthContext';
 import {
   apiGetUserProfile,
-  apiUpsertUserProfile,
+  apiUpdateUserProfile,
   UserProfileApi,
-  UpsertUserProfileInputApi,
+  UpdateUserProfileInputApi,
 } from '../api/profileApi';
 
 export interface UserProfile {
@@ -22,6 +22,8 @@ export interface UserProfile {
   language?: string;
   firstName?: string;
   lastName?: string;
+  billingCycleStartDay?: number;
+  billingCycleTimezone?: string;
 }
 
 interface ProfileContextValue {
@@ -29,7 +31,7 @@ interface ProfileContextValue {
   loading: boolean;
   error: string | null;
   refreshProfile: () => Promise<void>;
-  saveProfile: (patch: UpsertUserProfileInputApi) => Promise<void>;
+  saveProfile: (patch: UpdateUserProfileInputApi) => Promise<void>;
 }
 
 const ProfileContext = createContext<ProfileContextValue | undefined>(
@@ -45,14 +47,16 @@ export const useProfile = (): ProfileContextValue => {
 };
 
 const mapApiToProfile = (p: UserProfileApi): UserProfile => ({
-  id: p.id,
-  email: p.email,
+  id: p.userId,
+  email: p.email || '',
   createdAt: p.createdAt,
   currency: p.currency ?? undefined,
-  defaultDateRangePreset: p.defaultDateRangePreset ?? undefined,
+  defaultDateRangePreset: p.overviewDateRangePreset ?? undefined,
   language: p.language ?? undefined,
   firstName: p.firstName ?? undefined,
   lastName: p.lastName ?? undefined,
+  billingCycleStartDay: p.billingCycleStartDay,
+  billingCycleTimezone: p.billingCycleTimezone,
 });
 
 export const ProfileProvider: React.FC<{ children: ReactNode }> = ({
@@ -91,12 +95,12 @@ export const ProfileProvider: React.FC<{ children: ReactNode }> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-  const saveProfile = async (patch: UpsertUserProfileInputApi) => {
+  const saveProfile = async (patch: UpdateUserProfileInputApi) => {
     if (!userId) throw new Error('Not signed in');
 
     try {
       setError(null);
-      const updated = await apiUpsertUserProfile(patch);
+      const updated = await apiUpdateUserProfile(patch);
       setProfile(mapApiToProfile(updated));
     } catch (e: any) {
       console.error('Failed to save profile', e);

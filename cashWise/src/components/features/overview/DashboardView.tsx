@@ -12,24 +12,14 @@ import {
     Easing
 } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
+import { useOverviewCycle } from '../../../store/CycleContext';
+import { useProfile } from '../../../store/ProfileContext';
+import { groupDailySpending, computePeriodTotals, buildDateRangeArray } from '../../../utils/overview';
+import { getCurrencySymbol } from '../../../utils/currency';
 
 interface DashboardViewProps {
-    totals: { income: number; expenses: number };
-    billingCycle: { label: string; start: string; end: string };
-    chartData: any;
-    chartConfig: any;
-    dailySpendingMap: Record<string, number>;
-    allDates: string[];
     onDayPress: (date: string) => void;
     themeColor: string;
-    formatAmount: (amount: number) => string;
-    hideZeroPoints: number[];
-    chartWidthPx: number;
-    chartHeightPx: number;
-    cumulativeSpending: number[];
-    visibleCycleDates: string[];
-    getPointPosition: (index: number) => { x: number; y: number };
-    datasetValues: number[];
 }
 
 const GlowingDot = ({ color }: { color: string }) => {
@@ -76,22 +66,8 @@ const GlowingDot = ({ color }: { color: string }) => {
 };
 
 const DashboardView: React.FC<DashboardViewProps> = ({
-    totals,
-    billingCycle,
-    chartData,
-    chartConfig,
-    dailySpendingMap,
-    allDates,
     onDayPress,
-    themeColor,
-    formatAmount,
-    hideZeroPoints,
-    chartWidthPx,
-    chartHeightPx,
-    cumulativeSpending,
-    visibleCycleDates,
-    getPointPosition,
-    datasetValues
+    themeColor
 }) => {
     const isDarkMode = useColorScheme() === 'dark';
     const textColor = isDarkMode ? '#FFFFFF' : '#333333';
@@ -102,40 +78,154 @@ const DashboardView: React.FC<DashboardViewProps> = ({
     const { width } = Dimensions.get('window');
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-    const dynamicCardStyle = [styles.card, { backgroundColor: cardBg, borderColor: cardBorder }];
+    // --- Context & Data Derivation ---
+    const { transactions, start, endExclusive } = useOverviewCycle();
+    const { profile } = useProfile();
+    const currencySymbol = getCurrencySymbol(profile?.currency);
 
-    // Calendar Layout Constants
+    const formatAmount = (amount: number) => `${currencySymbol}${amount.toFixed(2)}`;
+
+    // 1. Totals
+    const totals = React.useMemo(() => computePeriodTotals(transactions), [transactions]);
+
+    // 2. Billing Cycle Label
+    const isoString = (dateObj: Date) => {
+        const year = dateObj.getFullYear();
+        const month = `${dateObj.getMonth() + 1}`.padStart(2, '0');
+        const day = `${dateObj.getDate()}`.padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const billingCycle = React.useMemo(() => {
+        if (!start || !endExclusive) return { label: '', start: '', end: '' };
+        const startDate = new Date(start);
+        const endDate = new Date(endExclusive);
+        endDate.setDate(endDate.getDate() - 1); // Inclusive end
+
+        const label = `${startDate.getDate()}/${(startDate.getMonth() + 1).toString().padStart(2, '0')} - ${endDate.getDate()}/${(endDate.getMonth() + 1).toString().padStart(2, '0')}`;
+        return { start, end: endExclusive, label };
+    }, [start, endExclusive]);
+
+    // 3. Calendar Dates
+    // Use helper to build array from start to INCLUSIVE end
+    const allDates = React.useMemo(() => {
+        if (!billingCycle.start || !billingCycle.end) return [];
+        // To build full grid, we go from start to end-1 (exclusive in context means next month start)
+        const endD = new Date(billingCycle.end);
+        endD.setDate(endD.getDate() - 1);
+        return buildDateRangeArray(billingCycle.start, isoString(endD));
+    }, [billingCycle]);
+
+    const dailySpendingMap = React.useMemo(() => groupDailySpending(transactions), [transactions]);
+
+    const visibleCycleDates = React.useMemo(() => {
+        const todayIso = isoString(new Date());
+        if (billingCycle.end <= todayIso) return allDates; // Past cycle
+        if (billingCycle.start > todayIso) return []; // Future cycle
+        // Current cycle
+        const filtered = allDates.filter((date) => date <= todayIso);
+        return filtered.length > 0 ? filtered : [];
+    }, [allDates, billingCycle]);
+
+    // 4. Chart Data
+    const chartData = React.useMemo(() => {
+        return {
+            labels: visibleCycleDates.map((date) => {
+                const day = date.slice(8, 10);
+                return ['05', '10', '15', '20', '25', '30'].includes(day) ? day : '';
+            }),
+            datasets: [
+                {
+                    data: visibleCycleDates.map((date) => dailySpendingMap[date] ?? 0),
+                    color: () => themeColor,
+                    strokeWidth: 2,
+                },
+            ],
+        };
+    }, [visibleCycleDates, dailySpendingMap, themeColor]);
+
+    const chartConfig = React.useMemo(
+        () => ({
+            backgroundColor: 'transparent',
+            backgroundGradientFrom: 'transparent',
+            backgroundGradientFromOpacity: 0,
+            backgroundGradientTo: 'transparent',
+            backgroundGradientToOpacity: 0,
+            decimalPlaces: 0,
+            color: (opacity = 1) => isDarkMode ? `rgba(2, 195, 189, ${opacity})` : `rgba(0, 124, 190, ${opacity})`,
+            labelColor: (opacity = 1) => isDarkMode ? `rgba(255, 255, 255, 1)` : `rgba(51, 51, 51, 1)`,
+            propsForDots: {
+                r: '4',
+                strokeWidth: '2',
+                stroke: isDarkMode ? '#1e1e1e' : '#fff',
+            },
+            propsForBackgroundLines: {
+                strokeDasharray: '',
+                stroke: 'rgba(255,255,255,0.2)',
+            },
+            fillShadowGradientFrom: themeColor,
+            fillShadowGradientTo: themeColor,
+            fillShadowGradientFromOpacity: 0.2,
+            fillShadowGradientToOpacity: 0,
+        }),
+        [isDarkMode, themeColor],
+    );
+
+    const datasetValues = chartData.datasets[0]?.data ?? [];
+    const hideZeroPoints = React.useMemo(() => {
+        return datasetValues.reduce<number[]>((acc, value, index) => {
+            if (value === 0) acc.push(index);
+            return acc;
+        }, []);
+    }, [datasetValues]);
+
+    const cumulativeSpending = React.useMemo(() => {
+        let running = 0;
+        return visibleCycleDates.map((date) => {
+            running += dailySpendingMap[date] ?? 0;
+            return running;
+        });
+    }, [visibleCycleDates, dailySpendingMap]);
+
+    // --- Layout ---
+    const dynamicCardStyle = [styles.card, { backgroundColor: cardBg, borderColor: cardBorder }];
     const GAP = 8;
-    const TOTAL_PADDING = 24; // 12 padding left + 12 padding right from card
-    const availableWidth = width - 32 - TOTAL_PADDING; // Screen width - Screen Padding - Card Padding
+    const TOTAL_PADDING = 24;
+    const availableWidth = width - 32 - TOTAL_PADDING;
     const itemWidth = Math.floor((availableWidth - (GAP * 6)) / 7);
 
+    const chartWidthPx = Math.max(width - 64, 280);
+    const chartHeightPx = 250;
+    const chartPaddingHorizontal = 16;
+    const chartPaddingVertical = 36;
+    const effectiveHeight = 202; // Roughly calculated
+    const maxChartValue = datasetValues.length > 0 ? Math.max(...datasetValues, 0) : 0;
+    const safeMaxChartValue = maxChartValue > 0 ? maxChartValue : 1;
+
+    const getPointPosition = (index: number) => {
+        const effectiveWidth = Math.max(chartWidthPx - chartPaddingHorizontal * 2, 1);
+        const pointSpacing = datasetValues.length > 1 ? effectiveWidth / (datasetValues.length - 1) : 0;
+
+        const value = datasetValues[index] ?? 0;
+        const ratio = safeMaxChartValue === 0 ? 0 : value / safeMaxChartValue;
+        const x = chartPaddingHorizontal + pointSpacing * index;
+        const y = chartHeightPx - chartPaddingVertical - ratio * effectiveHeight;
+        return { x, y };
+    };
+
     // Tooltip Logic
-    const showTooltip =
-        selectedIndex !== null &&
-        selectedIndex >= 0 &&
-        selectedIndex < datasetValues.length;
-
+    const showTooltip = selectedIndex !== null && selectedIndex >= 0 && selectedIndex < datasetValues.length;
     const tooltipIndex = showTooltip ? selectedIndex! : null;
-    const tooltipDate =
-        tooltipIndex !== null ? visibleCycleDates[tooltipIndex] : undefined;
-    const tooltipDayLabel = tooltipDate
-        ? (() => {
-            const date = new Date(`${tooltipDate}T00:00:00`);
-            const weekday = date.toLocaleDateString(undefined, {
-                weekday: 'short',
-            });
-            const dd = `${date.getDate()}`.padStart(2, '0');
-            const mm = `${date.getMonth() + 1}`.padStart(2, '0');
-            return `${weekday}, ${dd}/${mm}`;
-        })()
-        : '';
-
-    const tooltipSpent =
-        tooltipIndex !== null ? cumulativeSpending[tooltipIndex] ?? 0 : 0;
-
-    const tooltipPos =
-        tooltipIndex !== null ? getPointPosition(tooltipIndex) : null;
+    const tooltipDate = tooltipIndex !== null ? visibleCycleDates[tooltipIndex] : undefined;
+    const tooltipDayLabel = tooltipDate ? (() => {
+        const date = new Date(`${tooltipDate}T00:00:00`);
+        const weekday = date.toLocaleDateString(undefined, { weekday: 'short' });
+        const dd = `${date.getDate()}`.padStart(2, '0');
+        const mm = `${date.getMonth() + 1}`.padStart(2, '0');
+        return `${weekday}, ${dd}/${mm}`;
+    })() : '';
+    const tooltipSpent = tooltipIndex !== null ? cumulativeSpending[tooltipIndex] ?? 0 : 0;
+    const tooltipPos = tooltipIndex !== null ? getPointPosition(tooltipIndex) : null;
     const tooltipWidth = 140;
     const tooltipHeight = 64;
 
@@ -143,15 +233,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         if (Number.isNaN(value)) return min;
         return Math.min(Math.max(value, min), max);
     };
-
-    const tooltipLeft =
-        tooltipPos !== null
-            ? clamp(tooltipPos.x - tooltipWidth / 2, 0, chartWidthPx - tooltipWidth)
-            : 0;
-    const tooltipTop =
-        tooltipPos !== null
-            ? clamp(tooltipPos.y - tooltipHeight - 8, 0, chartHeightPx - tooltipHeight)
-            : 0;
+    const tooltipLeft = tooltipPos !== null ? clamp(tooltipPos.x - tooltipWidth / 2, 0, chartWidthPx - tooltipWidth) : 0;
+    const tooltipTop = tooltipPos !== null ? clamp(tooltipPos.y - tooltipHeight - 8, 0, chartHeightPx - tooltipHeight) : 0;
 
     const lastPointIndex = datasetValues.length - 1;
     const lastPointPos = lastPointIndex >= 0 ? getPointPosition(lastPointIndex) : null;
@@ -182,23 +265,31 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                             { width: chartWidthPx, height: chartHeightPx },
                         ]}
                     >
-                        <LineChart
-                            data={chartData}
-                            width={chartWidthPx}
-                            height={chartHeightPx}
-                            chartConfig={chartConfig}
-                            bezier
-                            fromZero
-                            withInnerLines={false}
-                            withOuterLines={false}
-                            withHorizontalLabels={false}
-                            withVerticalLabels={true}
-                            verticalLabelRotation={0}
-                            hidePointsAtIndex={[...hideZeroPoints, lastPointIndex]}
-                            onDataPointClick={handlePointPress}
-                            style={{ ...styles.chart, paddingBottom: 20 }}
-                        />
-                        {lastPointPos && (
+                        {datasetValues.length > 1 ? (
+                            <LineChart
+                                data={chartData}
+                                width={chartWidthPx}
+                                height={chartHeightPx}
+                                chartConfig={chartConfig}
+                                bezier
+                                fromZero
+                                withInnerLines={false}
+                                withOuterLines={false}
+                                withHorizontalLabels={false}
+                                withVerticalLabels={true}
+                                verticalLabelRotation={0}
+                                hidePointsAtIndex={[...hideZeroPoints, lastPointIndex]}
+                                onDataPointClick={handlePointPress}
+                                style={{ ...styles.chart, paddingBottom: 20 }}
+                            />
+                        ) : (
+                            <View style={{ width: chartWidthPx, height: chartHeightPx, alignItems: 'center', justifyContent: 'center' }}>
+                                {datasetValues.length === 0 && (
+                                    <Text style={{ color: subTextColor, marginTop: 80 }}>No data for this period</Text>
+                                )}
+                            </View>
+                        )}
+                        {lastPointPos && datasetValues.length > 0 && (
                             <View
                                 style={{
                                     position: 'absolute',
@@ -262,18 +353,15 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                 {/* Days Grid */}
                 <View style={styles.calendarGrid}>
                     {allDates.map((date, index) => {
-                        const dayNum = parseInt(date.slice(8, 10), 10); // Removes leading zero
+                        const dayNum = parseInt(date.slice(8, 10), 10);
                         const hasSpending = (dailySpendingMap[date] ?? 0) > 0;
 
-                        // Future date check
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
                         const cellDate = new Date(date);
                         cellDate.setHours(0, 0, 0, 0);
                         const isFuture = cellDate > today;
 
-                        // Need to handle gaps in the grid for correct wrapping
-                        // We'll use marginRight except for the last item in a row
                         const isLastInRow = (index + 1) % 7 === 0;
 
                         return (
@@ -289,7 +377,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                                         opacity: isFuture ? 0.3 : 1,
                                     },
                                     hasSpending && !isFuture && {
-                                        backgroundColor: isDarkMode ? 'rgba(2, 195, 189, 0.15)' : '#E0F7FA', // Subtle background
+                                        backgroundColor: isDarkMode ? 'rgba(2, 195, 189, 0.15)' : '#E0F7FA',
                                         borderColor: themeColor,
                                     },
                                 ]}

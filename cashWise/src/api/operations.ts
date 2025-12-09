@@ -87,21 +87,38 @@ export const DELETE_TRANSACTION = /* GraphQL */ `
 export const GET_USER_PROFILE = /* GraphQL */ `
   query GetUserProfile {
     getUserProfile {
-      id
+      userId
       email
-      createdAt
-      currency
-      defaultDateRangePreset
-      language
       firstName
       lastName
+      language
+      currency
+      billingCycleStartDay
+      billingCycleTimezone
+      overviewDateRangePreset
+      budgetDateRangePreset
+      createdAt
+      updatedAt
     }
   }
 `;
 
-export const UPSERT_USER_PROFILE = /* GraphQL */ `
-  mutation UpsertUserProfile($input: UpsertUserProfileInput!) {
-    upsertUserProfile(input: $input)
+export const UPDATE_USER_PROFILE = /* GraphQL */ `
+  mutation UpdateUserProfile($input: UpdateUserProfileInput!) {
+    updateUserProfile(input: $input) {
+      userId
+      email
+      firstName
+      lastName
+      language
+      currency
+      billingCycleStartDay
+      billingCycleTimezone
+      overviewDateRangePreset
+      budgetDateRangePreset
+      createdAt
+      updatedAt
+    }
   }
 `;
 

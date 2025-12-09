@@ -13,19 +13,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useTransactions } from '../store/TransactionsContext';
+// import { useTransactions } from '../store/TransactionsContext'; // Replaced by useCycle
 import { useProfile } from '../store/ProfileContext';
-import { useCategories } from '../store/CategoriesContext';
+
+import { OverviewCycleProvider, useOverviewCycle } from '../store/CycleContext';
 import TransactionForm from '../components/TransactionForm';
 import type { OverviewStackParamList } from '../navigation/OverviewStack';
-import {
-  computePeriodTotals,
-  groupDailySpending,
-  buildDateRangeArray,
-} from '../utils/overview';
-import { getCurrencySymbol } from '../utils/currency';
-import { t, isRTL } from '../utils/i18n';
-import { CATEGORY_REPO } from '../data/categoryRepo';
+import { t as translate } from '../utils/i18n';
 
 // Feature Components
 import OverviewHeader from '../components/features/overview/OverviewHeader';
@@ -36,13 +30,21 @@ import TransactionList from '../components/features/overview/TransactionList';
 
 type Nav = NativeStackNavigationProp<OverviewStackParamList, 'OverviewMain'>;
 
-const OverviewScreen: React.FC = () => {
+const OverviewContent: React.FC = () => {
   const navigation = useNavigation<Nav>();
   const { width } = useWindowDimensions();
-  const { transactions, dateRange } = useTransactions();
+  const {
+    transactions,
+    start,
+    endExclusive,
+    offset,
+    setOffset,
+    loading: cycleLoading
+  } = useOverviewCycle();
+
   const { profile } = useProfile();
-  const { categories } = useCategories();
-  const currencySymbol = getCurrencySymbol(profile?.currency);
+
+
   const language = profile?.language || 'en';
 
   // --- THEME & COLORS SETUP ---
@@ -52,7 +54,7 @@ const OverviewScreen: React.FC = () => {
 
   const [mode, setMode] = useState<OverviewMode>('DASHBOARD');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [filter, setFilter] = useState<'EXPENSES' | 'INCOME' | 'SAVINGS'>('EXPENSES');
+  // const [filter, setFilter] = useState<'EXPENSES' | 'INCOME' | 'SAVINGS'>('EXPENSES'); // Removed as no longer used by spendingChartData
 
   const translateX = useRef(new Animated.Value(0)).current;
   const modeOrder: Record<OverviewMode, number> = {
@@ -61,258 +63,33 @@ const OverviewScreen: React.FC = () => {
     LIST: 2,
   };
 
-  const totals = useMemo(
-    () => computePeriodTotals(transactions),
-    [transactions],
-  );
-
-  const dailySpendingMap = useMemo(
-    () => groupDailySpending(transactions),
-    [transactions],
-  );
-
-  const allDates = useMemo(
-    () => buildDateRangeArray(dateRange.fromDate, dateRange.toDate),
-    [dateRange.fromDate, dateRange.toDate],
-  );
-
-  const isoString = (dateObj: Date) => {
-    const year = dateObj.getFullYear();
-    const month = `${dateObj.getMonth() + 1}`.padStart(2, '0');
-    const day = `${dateObj.getDate()}`.padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
+  // Billing Cycle Label for Header
   const billingCycle = useMemo(() => {
-    const toDate = new Date(dateRange.toDate);
-    const start = new Date(toDate);
-    if (toDate.getDate() >= 10) {
-      start.setDate(10);
-    } else {
-      start.setMonth(toDate.getMonth() - 1);
-      start.setDate(10);
-    }
-    const end = new Date(start);
-    end.setMonth(end.getMonth() + 1);
-    end.setDate(9);
+    // start/endExclusive are strings 'YYYY-MM-DD'
+    if (!start || !endExclusive) return { label: '' };
 
-    const label = `10/${`${start.getMonth() + 1}`.padStart(
-      2,
-      '0',
-    )} - 09/${`${end.getMonth() + 1}`.padStart(2, '0')}`;
+    const startDate = new Date(start);
+    const endDate = new Date(endExclusive);
+    // Display end is exclusive - 1 day
+    endDate.setDate(endDate.getDate() - 1);
 
-    return {
-      start: isoString(start),
-      end: isoString(end),
-      label,
-    };
-  }, [dateRange.toDate]);
+    const label = `${startDate.getDate()}/${(startDate.getMonth() + 1).toString().padStart(2, '0')} - ${endDate.getDate()}/${(endDate.getMonth() + 1).toString().padStart(2, '0')}`;
 
-  const billingCycleDates = useMemo(
-    () => buildDateRangeArray(billingCycle.start, billingCycle.end),
-    [billingCycle.start, billingCycle.end],
-  );
+    return { label };
+  }, [start, endExclusive]);
 
-  const visibleCycleDates = useMemo(() => {
-    const todayIso = isoString(new Date());
-    const maxDate = todayIso < billingCycle.end ? todayIso : billingCycle.end;
-    const filtered = billingCycleDates.filter((date) => date <= maxDate);
-    return filtered.length > 0 ? filtered : billingCycleDates.slice(0, 1);
-  }, [billingCycle.end, billingCycleDates]);
+  // const cycleBudget = 0; // TODO: Fetch from profile or settings // Removed as no longer used
 
-  // --- CHART CONFIGURATION ---
-  const chartData = useMemo(() => {
-    return {
-      labels: visibleCycleDates.map((date) => {
-        const day = date.slice(8, 10);
-        const label = ['10', '15', '20', '25', '30', '05'].includes(day) ? day : '';
-        return label;
-      }),
-      datasets: [
-        {
-          data: visibleCycleDates.map((date) => dailySpendingMap[date] ?? 0),
-          color: () => themeColor,
-          strokeWidth: 2,
-        },
-      ],
-    };
-  }, [visibleCycleDates, dailySpendingMap, themeColor]);
-
-  const chartConfig = useMemo(
-    () => ({
-      // Transparent Background
-      backgroundColor: 'transparent',
-      backgroundGradientFrom: 'transparent',
-      backgroundGradientFromOpacity: 0,
-      backgroundGradientTo: 'transparent',
-      backgroundGradientToOpacity: 0,
-      decimalPlaces: 0,
-      color: (opacity = 1) => {
-        return isDarkMode
-          ? `rgba(2, 195, 189, ${opacity})`
-          : `rgba(0, 124, 190, ${opacity})`;
-      },
-      labelColor: (opacity = 1) => isDarkMode
-        ? `rgba(255, 255, 255, 1)`
-        : `rgba(51, 51, 51, 1)`,
-      propsForDots: {
-        r: '4',
-        strokeWidth: '2',
-        stroke: isDarkMode ? '#1e1e1e' : '#fff',
-      },
-      propsForBackgroundLines: {
-        strokeDasharray: '',
-        stroke: 'rgba(255,255,255,0.2)',
-      },
-      fillShadowGradientFrom: themeColor,
-      fillShadowGradientTo: themeColor,
-      fillShadowGradientFromOpacity: 0.2,
-      fillShadowGradientToOpacity: 0,
-    }),
-    [isDarkMode, themeColor],
-  );
-
-  const datasetValues = chartData.datasets[0]?.data ?? [];
-  const maxChartValue =
-    datasetValues.length > 0 ? Math.max(...datasetValues, 0) : 0;
-  const safeMaxChartValue = maxChartValue > 0 ? maxChartValue : 1;
-  const chartWidthPx = Math.max(width - 64, 280);
-  const chartHeightPx = 250;
-  const chartPaddingHorizontal = 16;
-  const chartPaddingVertical = 36;
-  const effectiveWidth = Math.max(
-    chartWidthPx - chartPaddingHorizontal * 2,
-    1,
-  );
-  const effectiveHeight = Math.max(
-    chartHeightPx - chartPaddingVertical - 12,
-    1,
-  );
-  const pointSpacing =
-    datasetValues.length > 1
-      ? effectiveWidth / (datasetValues.length - 1)
-      : 0;
-
-  const getPointPosition = (index: number) => {
-    const value = datasetValues[index] ?? 0;
-    const ratio = safeMaxChartValue === 0 ? 0 : value / safeMaxChartValue;
-    const x = chartPaddingHorizontal + pointSpacing * index;
-    const y = chartHeightPx - chartPaddingVertical - ratio * effectiveHeight;
-    return { x, y };
-  };
-
-  const cumulativeSpending = useMemo(() => {
-    let running = 0;
-    return visibleCycleDates.map((date) => {
-      running += dailySpendingMap[date] ?? 0;
-      return running;
-    });
-  }, [visibleCycleDates, dailySpendingMap]);
-
-  const hideZeroPoints = useMemo(() => {
-    return chartData.datasets[0].data.reduce<number[]>((acc, value, index) => {
-      if (value === 0) acc.push(index);
-      return acc;
-    }, []);
-  }, [chartData]);
-
-  const cycleBudget = 0;
-
-  const formatAmount = (amount: number) => {
-    return `${currencySymbol}${amount.toFixed(2)}`;
-  };
+  // const formatAmount = (amount: number) => { // Removed as no longer used
+  //   return `${currencySymbol}${amount.toFixed(2)}`;
+  // };
 
   const handleDayPress = (date: string) => {
     navigation.navigate('DailyTransactions', { date });
   };
 
-  const filteredTransactions = useMemo(() => {
-    return transactions.filter((t) => {
-      if (!t.includeInStats) return false;
-      if (filter === 'EXPENSES') return t.type === 'expense';
-      if (filter === 'INCOME') return t.type === 'income';
-      if (filter === 'SAVINGS') {
-        const cat = categories.find(c => c.id === t.categoryId);
-        return cat?.name?.toLowerCase() === 'savings';
-      }
-      return false;
-    });
-  }, [transactions, filter, categories]);
 
-  // Group by category with color logic
-  const spendingChartData = useMemo(() => {
-    const map = new Map<string, { total: number; count: number }>();
 
-    for (const t of filteredTransactions) {
-      const key = t.categoryId;
-      const prev = map.get(key) ?? { total: 0, count: 0 };
-      prev.total += t.amount;
-      prev.count += 1;
-      map.set(key, prev);
-    }
-
-    const result: {
-      categoryId: string;
-      total: number;
-      count: number;
-      name: string;
-      color: string;
-      legendFontColor: string;
-      legendFontSize: number;
-    }[] = [];
-
-    const palette = [
-      '#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd', '#1dd1a1',
-    ];
-    let pIndex = 0;
-
-    const findRepoColor = (categoryName: string) => {
-      const lowerName = categoryName.toLowerCase();
-      for (const group of CATEGORY_REPO) {
-        if (group.items.some(item => item.label.toLowerCase() === lowerName)) {
-          return group.color;
-        }
-      }
-      return null;
-    };
-
-    for (const [categoryId, agg] of map.entries()) {
-      const cat = categories.find((c) => c.id === categoryId);
-      const categoryName = cat?.name ?? 'Uncategorized';
-
-      let color = cat?.color ?? findRepoColor(categoryName);
-      if (!color) {
-        color = palette[pIndex % palette.length];
-        pIndex++;
-      }
-
-      result.push({
-        categoryId,
-        total: agg.total,
-        count: agg.count,
-        name: categoryName,
-        color,
-        legendFontColor: isDarkMode ? '#CCC' : '#7F7F7F',
-        legendFontSize: 12,
-      });
-    }
-
-    return result.sort((a, b) => b.total - a.total);
-  }, [filteredTransactions, categories, isDarkMode]);
-
-  const pieData = spendingChartData.map((item) => ({
-    name: item.name,
-    population: item.total,
-    color: item.color,
-    legendFontColor: item.legendFontColor,
-    legendFontSize: item.legendFontSize,
-  }));
-
-  const totalAmount = spendingChartData.reduce((acc, curr) => acc + curr.total, 0);
-
-  const sortedTransactions = useMemo(() => {
-    return [...transactions].sort((a, b) => (a.date < b.date ? 1 : -1));
-  }, [transactions]);
 
   const handleModeChange = (nextMode: OverviewMode) => {
     if (nextMode === mode) return;
@@ -327,59 +104,42 @@ const OverviewScreen: React.FC = () => {
   };
 
   const renderModeContent = () => {
+    if (cycleLoading && transactions.length === 0) {
+      // Can add a loading spinner here
+      return <View style={{ padding: 20 }}><Text style={{ color: textColor, textAlign: 'center' }}>Loading...</Text></View>
+    }
+
     if (mode === 'DASHBOARD') {
       return (
         <DashboardView
-          totals={totals}
-          billingCycle={billingCycle}
-          chartData={chartData}
-          chartConfig={chartConfig}
-          dailySpendingMap={dailySpendingMap}
-          allDates={allDates}
           onDayPress={handleDayPress}
           themeColor={themeColor}
-          formatAmount={formatAmount}
-          hideZeroPoints={hideZeroPoints}
-          chartWidthPx={chartWidthPx}
-          chartHeightPx={chartHeightPx}
-          cumulativeSpending={cumulativeSpending}
-          visibleCycleDates={visibleCycleDates}
-          getPointPosition={getPointPosition}
-          datasetValues={datasetValues}
         />
       );
     }
 
     if (mode === 'SPENDING') {
       return (
-        <SpendingView
-          totals={totals}
-          cycleBudget={cycleBudget}
-          filter={filter}
-          setFilter={setFilter}
-          spendingChartData={spendingChartData}
-          pieData={pieData}
-          totalAmount={totalAmount}
-          chartConfig={chartConfig}
-          formatAmount={formatAmount}
-          themeColor={themeColor}
-        />
+        <SpendingView themeColor={themeColor} />
       );
     }
 
     return (
-      <TransactionList transactions={sortedTransactions} />
+      <TransactionList />
     );
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <Text style={[styles.title, { color: textColor }]}>{t('overviewTitle', language)}</Text>
+        <Text style={[styles.title, { color: textColor }]}>{translate('overviewTitle', language)}</Text>
         <OverviewHeader
-          dateRange={dateRange}
+          dateRange={{ fromDate: billingCycle.label.split(' - ')[0], toDate: billingCycle.label.split(' - ')[1] }} // simplified
           themeColor={themeColor}
-          title={undefined} // Header title handled by screen title above
+          title={undefined}
+          onPrev={() => setOffset(offset + 1)} // Previous = increase offset (time ago)
+          onNext={() => setOffset(offset - 1)} // Next = decrease offset
+          showArrows={true}
         />
 
         <OverviewModeSwitcher
@@ -408,7 +168,7 @@ const OverviewScreen: React.FC = () => {
                 style={styles.bigAddButton}
                 onPress={() => setShowAddModal(true)}
               >
-                <Text style={styles.bigAddButtonText}>+ {t('addTransaction', language)}</Text>
+                <Text style={styles.bigAddButtonText}>+ {translate('addTransaction', language)}</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -436,6 +196,14 @@ const OverviewScreen: React.FC = () => {
         </Modal>
       </View>
     </SafeAreaView>
+  );
+};
+
+const OverviewScreen: React.FC = () => {
+  return (
+    <OverviewCycleProvider>
+      <OverviewContent />
+    </OverviewCycleProvider>
   );
 };
 

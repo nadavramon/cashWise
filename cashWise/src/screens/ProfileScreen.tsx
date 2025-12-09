@@ -38,7 +38,7 @@ const ProfileScreen: React.FC = () => {
         firstName: firstName.trim() || undefined,
         lastName: lastName.trim() || undefined,
         currency: currency.trim() || undefined,
-        defaultDateRangePreset: defaultPreset,
+        overviewDateRangePreset: defaultPreset as any,
         language: language.trim() || undefined,
       };
 
