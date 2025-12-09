@@ -88,19 +88,43 @@ export async function apiCreateTransaction(
   throw new Error('CreateTransaction returned no data');
 }
 
+export interface TransactionApi {
+  id: string;
+  userId: string;
+  type: 'INCOME' | 'EXPENSE';
+  amount: number;
+  categoryId: string;
+  date: string; // AWSDate: 'YYYY-MM-DD'
+  note?: string | null;
+  includeInStats: boolean;
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
+export interface ListTransactionsInputApi {
+  fromDate: string;      // 'YYYY-MM-DD'
+  toDate: string;        // 'YYYY-MM-DD'
+  limit?: number;
+  nextToken?: string | null;
+}
+
+export interface TransactionConnectionApi {
+  items: TransactionApi[];
+  nextToken?: string | null;
+}
+
+interface ListTransactionsResponse {
+  listTransactions: TransactionConnectionApi;
+}
+
 export async function apiListTransactions(
-  fromDate: string,
-  toDate: string
-): Promise<Transaction[]> {
-  const result = await graphqlClient.graphql({
+  input: ListTransactionsInputApi,
+): Promise<TransactionConnectionApi> { // Changed return type to Connection
+  const result = (await graphqlClient.graphql({
     query: LIST_TRANSACTIONS,
-    variables: { fromDate, toDate },
+    variables: { input },
     authMode: 'userPool',
-  });
+  })) as { data: ListTransactionsResponse };
 
-  if ('data' in result && result.data?.listTransactions) {
-    return result.data.listTransactions as Transaction[];
-  }
-
-  throw new Error('ListTransactions returned no data');
+  return result.data?.listTransactions ?? { items: [], nextToken: null };
 }

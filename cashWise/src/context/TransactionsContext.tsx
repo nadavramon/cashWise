@@ -14,7 +14,7 @@ import {
   apiUpdateTransaction,
   apiDeleteTransaction,
   CreateTransactionInput as ApiCreateInput,
-  Transaction as ApiTransaction,
+  TransactionApi as ApiTransaction,
   UpdateTransactionInputApi,
 } from '../api/transactionsApi';
 import { getCycleRangeForDate } from '../utils/billingCycle';
@@ -170,10 +170,24 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
       setLoading(true);
       setError(null);
 
-      const apiTxs = await apiListTransactions(range.fromDate, range.toDate);
-      const mapped = apiTxs.map(mapApiToUi);
+      const allTxs: UiTransaction[] = [];
+      let nextToken: string | null = null;
 
-      setTransactions(mapped);
+      do {
+        // Call the thin API wrapper
+        const response = await apiListTransactions({
+          fromDate: range.fromDate,
+          toDate: range.toDate,
+          nextToken,
+        });
+
+        const mapped = response.items.map(mapApiToUi);
+        allTxs.push(...mapped);
+        nextToken = response.nextToken || null;
+
+      } while (nextToken);
+
+      setTransactions(allTxs);
     } catch (e: any) {
       console.error('Failed to load transactions', e);
       setError(e?.message ?? 'Failed to load transactions');

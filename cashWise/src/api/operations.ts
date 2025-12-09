@@ -18,18 +18,21 @@ export const CREATE_TRANSACTION = /* GraphQL */ `
 `;
 
 export const LIST_TRANSACTIONS = /* GraphQL */ `
-  query ListTransactions($fromDate: AWSDate!, $toDate: AWSDate!) {
-    listTransactions(fromDate: $fromDate, toDate: $toDate) {
-      id
-      userId
-      type
-      amount
-      categoryId
-      date
-      note
-      includeInStats
-      createdAt
-      updatedAt
+  query ListTransactions($input: ListTransactionsInput!) {
+    listTransactions(input: $input) {
+      items {
+        id
+        userId
+        type
+        amount
+        categoryId
+        date
+        note
+        includeInStats
+        createdAt
+        updatedAt
+      }
+      nextToken
     }
   }
 `;

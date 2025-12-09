@@ -8,10 +8,8 @@ import React, {
     ReactNode,
 } from 'react';
 import { useProfile } from './ProfileContext';
-import { Transaction as ApiTransaction, TransactionType as ApiTransactionType } from '../api/transactionsApi';
+import { TransactionApi as ApiTransaction, TransactionType as ApiTransactionType, apiListTransactions } from '../api/transactionsApi';
 import { Transaction } from '../types/models';
-import { graphqlClient } from '../api/graphqlClient';
-import { LIST_TRANSACTIONS } from '../api/operations';
 import { DateRangePresetApi } from '../api/profileApi';
 
 /*
@@ -43,9 +41,7 @@ export const useOverviewCycle = () => {
     return context;
 };
 
-interface ListTransactionsResponse {
-    listTransactions: ApiTransaction[];
-}
+
 
 const mapApiToModel = (apiTx: ApiTransaction): Transaction => ({
     id: apiTx.id,
@@ -98,17 +94,23 @@ export const OverviewCycleProvider: React.FC<{ children: ReactNode }> = ({
 
         try {
             console.log(`Fetching transactions from ${s} to ${e} (Preset: ${preset}, Offset: ${offset})`);
-            const result = await graphqlClient.graphql<ListTransactionsResponse>({
-                query: LIST_TRANSACTIONS,
-                variables: { fromDate: s, toDate: e }
-            });
 
-            if ('data' in result && result.data?.listTransactions) {
-                const mapped = result.data.listTransactions.map(mapApiToModel);
-                setTransactions(mapped);
-            } else {
-                setTransactions([]);
-            }
+            const allTxs: Transaction[] = []; // Model Transaction
+            let nextToken: string | null = null;
+
+            do {
+                const response = await apiListTransactions({
+                    fromDate: s,
+                    toDate: e,
+                    nextToken
+                });
+
+                const mapped = response.items.map(mapApiToModel);
+                allTxs.push(...mapped);
+                nextToken = response.nextToken || null;
+            } while (nextToken);
+
+            setTransactions(allTxs);
         } catch (err: any) {
             console.error("Error fetching transactions:", err);
             setError(err.message || 'Failed to fetch transactions');
