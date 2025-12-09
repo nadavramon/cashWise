@@ -17,8 +17,10 @@ import {
   Transaction as ApiTransaction,
   UpdateTransactionInputApi,
 } from '../api/transactionsApi';
+import { getCycleRangeForDate } from '../utils/billingCycle';
+import { DateRangePresetApi } from '../api/profileApi';
 
-type DateRangePreset = 'THIS_MONTH' | 'LAST_MONTH' | 'THIS_WEEK' | 'CUSTOM';
+type DateRangePreset = DateRangePresetApi | 'CUSTOM' | 'THIS_WEEK';
 
 interface DateRange {
   preset: DateRangePreset;
@@ -33,32 +35,11 @@ const formatDate = (d: Date): string => {
   return `${yyyy}-${mm}-${dd}`;
 };
 
-const getPresetRange = (preset: DateRangePreset): DateRange => {
+// Helper to bridge the gap between `DateRangePreset` (UI) and billing logic
+const getPresetRange = (preset: DateRangePreset, startDay: number = 1): DateRange => {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
 
-  if (preset === 'THIS_MONTH') {
-    const first = new Date(year, month, 1);
-    const last = new Date(year, month + 1, 0);
-    return {
-      preset,
-      fromDate: formatDate(first),
-      toDate: formatDate(last),
-    };
-  }
-
-  if (preset === 'LAST_MONTH') {
-    const lastMonth = month - 1;
-    const first = new Date(year, lastMonth, 1);
-    const last = new Date(year, lastMonth + 1, 0);
-    return {
-      preset,
-      fromDate: formatDate(first),
-      toDate: formatDate(last),
-    };
-  }
-
+  // Handle specific UI-only presets like THIS_WEEK if not covered by utility
   if (preset === 'THIS_WEEK') {
     const day = now.getDay();
     const diffToMonday = (day + 6) % 7;
@@ -74,10 +55,32 @@ const getPresetRange = (preset: DateRangePreset): DateRange => {
     };
   }
 
+  if (preset === 'CUSTOM') {
+    return {
+      preset: 'CUSTOM',
+      fromDate: formatDate(now),
+      toDate: formatDate(now),
+    };
+  }
+
+  // Use the shared utility for everything else (CURRENT_CYCLE, LAST_CYCLE, THIS_MONTH, LAST_MONTH, YEAR_TO_DATE)
+  const { start, endExclusive } = getCycleRangeForDate(
+    now,
+    { startDay },
+    preset as DateRangePresetApi
+  );
+
+  // Note: TransactionsContext uses inclusive ranges (user expects 'toDate' to be included potentially?)
+  // Actually, apiListTransactions takes from/to.
+  // The utility returns endExclusive (start of next period).
+  // We subtract 1 day from endExclusive to get the inclusive end date.
+  const endDate = new Date(endExclusive);
+  endDate.setDate(endDate.getDate() - 1);
+
   return {
-    preset: 'CUSTOM',
-    fromDate: formatDate(now),
-    toDate: formatDate(now),
+    preset,
+    fromDate: start,
+    toDate: formatDate(endDate),
   };
 };
 
@@ -147,9 +150,15 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
   const [transactions, setTransactions] = useState<UiTransaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [dateRange, setDateRangeState] = useState<DateRange>(() =>
-    getPresetRange('THIS_MONTH'),
-  );
+
+  // Default to CURRENT_CYCLE
+  const [dateRange, setDateRangeState] = useState<DateRange>(() => {
+    return {
+      preset: 'CURRENT_CYCLE',
+      fromDate: formatDate(new Date()),
+      toDate: formatDate(new Date())
+    };
+  });
 
   const fetchTransactionsForRange = async (range: DateRange) => {
     if (!userId) {
@@ -173,24 +182,21 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  // Sync with profile default
   useEffect(() => {
-    if (!profile?.defaultDateRangePreset) return;
+    if (!profile) return;
 
-    // Only accept known presets
-    const preset = profile.defaultDateRangePreset as DateRangePreset;
-    if (!['THIS_MONTH', 'LAST_MONTH', 'THIS_WEEK'].includes(preset)) {
-      return;
-    }
+    const targetPreset = (profile.defaultDateRangePreset as DateRangePreset) || 'CURRENT_CYCLE';
 
-    // Only override if the user hasn't manually changed the preset away
-    // from the initial THIS_MONTH (simple rule: only if current is THIS_MONTH).
-    setDateRangeState((prev) => {
-      if (prev.preset !== 'THIS_MONTH') {
-        return prev;
-      }
-      return getPresetRange(preset);
+    const startDay = profile.billingCycleStartDay || 1;
+
+    setDateRangeState(current => {
+      // If the current preset is different from the target AND it's not custom/interactive, maybe update?
+      // For now, we force update only if we are still on the initial/default logic or if simple switching is desired.
+      // Let's just update based on the profile's preferred preset + startDay logic.
+      return getPresetRange(targetPreset, startDay);
     });
-  }, [profile?.defaultDateRangePreset]);
+  }, [profile]);
 
   useEffect(() => {
     fetchTransactionsForRange(dateRange);
@@ -228,7 +234,8 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const setPresetRange = (preset: DateRangePreset) => {
-    const range = getPresetRange(preset);
+    const startDay = profile?.billingCycleStartDay || 1;
+    const range = getPresetRange(preset, startDay);
     setDateRangeState(range);
   };
 

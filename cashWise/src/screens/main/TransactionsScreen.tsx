@@ -76,6 +76,10 @@ const TransactionsScreen: React.FC<Props> = ({ navigation }) => {
         </View>
         <View style={styles.filterRow}>
           <Button
+            title={t('filterCurrentCycle', language) || 'Current Cycle'}
+            onPress={() => setPresetRange('CURRENT_CYCLE')}
+          />
+          <Button
             title={t('filterThisMonth', language)}
             onPress={() => setPresetRange('THIS_MONTH')}
           />
@@ -93,9 +97,7 @@ const TransactionsScreen: React.FC<Props> = ({ navigation }) => {
         </View>
 
         {/* Optional: debug/show active range */}
-        {/* <Text>
-        {dateRange.fromDate} → {dateRange.toDate} ({dateRange.preset})
-      </Text> */}
+
         <FlatList
           data={transactions}
           keyExtractor={(item) => item.id}

@@ -83,6 +83,7 @@ export const OverviewCycleProvider: React.FC<{ children: ReactNode }> = ({
         // Default to CURRENT_CYCLE if missing (type cast/checking handled in getCycleRange)
         const preset = (defaultDateRangePreset as DateRangePresetApi) || 'CURRENT_CYCLE';
 
+
         const { start: s, endExclusive: e } = getCycleRangeForDate(
             new Date(),
             { startDay: billingCycleStartDay ?? 1 },

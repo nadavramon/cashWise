@@ -124,6 +124,10 @@ export const UPDATE_USER_PROFILE = /* GraphQL */ `
 
 export const EXPORT_TRANSACTIONS = /* GraphQL */ `
   mutation ExportTransactions($fromDate: AWSDate!, $toDate: AWSDate!) {
-    exportTransactions(fromDate: $fromDate, toDate: $toDate)
+    exportTransactions(fromDate: $fromDate, toDate: $toDate) {
+      ok
+      message
+      url
+    }
   }
 `;

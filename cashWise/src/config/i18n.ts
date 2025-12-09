@@ -45,6 +45,7 @@ export const TRANSLATIONS = {
 
         // Transactions
         transactionsTitle: 'Transactions',
+        filterCurrentCycle: 'Current Cycle',
         filterThisMonth: 'This month',
         filterLastMonth: 'Last month',
         filterThisWeek: 'This week',
@@ -166,6 +167,7 @@ export const TRANSLATIONS = {
 
         // Transactions
         transactionsTitle: 'תנועות',
+        filterCurrentCycle: 'מחזור נוכחי',
         filterThisMonth: 'החודש',
         filterLastMonth: 'חודש שעבר',
         filterThisWeek: 'השבוע',

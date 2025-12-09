@@ -9,7 +9,10 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Keyboard,
-  useColorScheme
+  useColorScheme,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useProfile } from '../../context/ProfileContext';
 import { I18nManager } from 'react-native';
@@ -99,80 +102,111 @@ const ProfileScreen: React.FC = () => {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={[styles.container, { backgroundColor: isDarkMode ? '#121212' : '#fff' }]}>
-        <Text style={[styles.title, { color: textColor }]}>{t('profileSettings', language)}</Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={{ paddingBottom: 40 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text style={[styles.title, { color: textColor }]}>{t('profileSettings', language)}</Text>
 
-        {loading && !profile ? (
-          <Text style={{ color: textColor }}>{t('loading', language)}</Text>
-        ) : (
-          <>
-            <Text style={[styles.label, { color: subTextColor }]}>{t('email', language)}</Text>
-            <Text style={[styles.readonly, { color: textColor }]}>{profile?.email ?? '-'}</Text>
+          {loading && !profile ? (
+            <Text style={{ color: textColor }}>{t('loading', language)}</Text>
+          ) : (
+            <>
+              <Text style={[styles.label, { color: subTextColor }]}>{t('email', language)}</Text>
+              <Text style={[styles.readonly, { color: textColor }]}>{profile?.email ?? '-'}</Text>
 
-            <Text style={[styles.label, { color: subTextColor }]}>{t('firstName', language)}</Text>
-            <TextInput
-              style={[styles.input, { color: textColor, backgroundColor: inputBg, borderColor: isDarkMode ? '#444' : '#ccc' }]}
-              value={firstName}
-              onChangeText={setFirstName}
-              textAlign={isRTL(language) ? 'right' : 'left'}
-            />
-
-            <Text style={[styles.label, { color: subTextColor }]}>{t('lastName', language)}</Text>
-            <TextInput
-              style={[styles.input, { color: textColor, backgroundColor: inputBg, borderColor: isDarkMode ? '#444' : '#ccc' }]}
-              value={lastName}
-              onChangeText={setLastName}
-              textAlign={isRTL(language) ? 'right' : 'left'}
-            />
-
-            <Text style={[styles.label, { color: subTextColor }]}>{t('currency', language)}</Text>
-            <TextInput
-              style={[styles.input, { color: textColor, backgroundColor: inputBg, borderColor: isDarkMode ? '#444' : '#ccc' }]}
-              value={currency}
-              onChangeText={setCurrency}
-              placeholder="e.g. ILS, USD, EUR"
-              placeholderTextColor={subTextColor}
-              textAlign={isRTL(language) ? 'right' : 'left'}
-            />
-
-            <Text style={[styles.label, { color: subTextColor }]}>{t('billingCycleStartDay', language) || 'Billing Cycle Start Day'}</Text>
-            <TextInput
-              style={[styles.input, { color: textColor, backgroundColor: inputBg, borderColor: isDarkMode ? '#444' : '#ccc' }]}
-              value={startDay}
-              onChangeText={(text) => setStartDay(text.replace(/[^0-9]/g, ''))}
-              keyboardType="numeric"
-              placeholder="1-31"
-              placeholderTextColor={subTextColor}
-              textAlign={isRTL(language) ? 'right' : 'left'}
-              maxLength={2}
-            />
-
-            <Text style={[styles.label, { color: subTextColor }]}>{t('language', language)}</Text>
-            <View style={styles.languageRow}>
-              <Button
-                title="English"
-                onPress={() => setLanguage('en')}
-                color={language === 'en' ? '#007AFF' : '#8E8E93'}
+              <Text style={[styles.label, { color: subTextColor }]}>{t('firstName', language)}</Text>
+              <TextInput
+                style={[styles.input, { color: textColor, backgroundColor: inputBg, borderColor: isDarkMode ? '#444' : '#ccc' }]}
+                value={firstName}
+                onChangeText={setFirstName}
+                textAlign={isRTL(language) ? 'right' : 'left'}
               />
-              <Button
-                title="עברית"
-                onPress={() => setLanguage('he')}
-                color={language === 'he' ? '#007AFF' : '#8E8E93'}
-              />
-            </View>
 
-            <View style={{ marginTop: 16 }}>
-              <Button
-                title={saving ? t('saving', language) : t('save', language)}
-                onPress={handleSave}
-                disabled={saving}
+              <Text style={[styles.label, { color: subTextColor }]}>{t('lastName', language)}</Text>
+              <TextInput
+                style={[styles.input, { color: textColor, backgroundColor: inputBg, borderColor: isDarkMode ? '#444' : '#ccc' }]}
+                value={lastName}
+                onChangeText={setLastName}
+                textAlign={isRTL(language) ? 'right' : 'left'}
               />
-            </View>
-          </>
-        )}
-      </View>
-    </TouchableWithoutFeedback>
+
+              <Text style={[styles.label, { color: subTextColor }]}>{t('currency', language)}</Text>
+              <TextInput
+                style={[styles.input, { color: textColor, backgroundColor: inputBg, borderColor: isDarkMode ? '#444' : '#ccc' }]}
+                value={currency}
+                onChangeText={setCurrency}
+                placeholder="e.g. ILS, USD, EUR"
+                placeholderTextColor={subTextColor}
+                textAlign={isRTL(language) ? 'right' : 'left'}
+              />
+
+              <Text style={[styles.label, { color: subTextColor }]}>{t('billingCycleStartDay', language) || 'Billing Cycle Start Day'}</Text>
+              <TextInput
+                style={[styles.input, { color: textColor, backgroundColor: inputBg, borderColor: isDarkMode ? '#444' : '#ccc' }]}
+                value={startDay}
+                onChangeText={(text) => setStartDay(text.replace(/[^0-9]/g, ''))}
+                keyboardType="numeric"
+                placeholder="1-31"
+                placeholderTextColor={subTextColor}
+                textAlign={isRTL(language) ? 'right' : 'left'}
+                maxLength={2}
+              />
+
+              <Text style={[styles.label, { color: subTextColor }]}>{t('defaultDateRange', language)}</Text>
+              <View style={styles.presetContainer}>
+                {(['CURRENT_CYCLE', 'LAST_CYCLE', 'THIS_MONTH', 'LAST_MONTH'] as DateRangePresetApi[]).map((preset) => (
+                  <TouchableOpacity
+                    key={preset}
+                    style={[
+                      styles.presetButton,
+                      defaultPreset === preset && { backgroundColor: themeColor, borderColor: themeColor },
+                      { borderColor: isDarkMode ? '#444' : '#ccc' }
+                    ]}
+                    onPress={() => setDefaultPreset(preset)}
+                  >
+                    <Text style={[
+                      styles.presetText,
+                      defaultPreset === preset ? { color: '#fff' } : { color: textColor }
+                    ]}>
+                      {preset.replace('_', ' ')}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <Text style={[styles.label, { color: subTextColor }]}>{t('language', language)}</Text>
+              <View style={styles.languageRow}>
+                <Button
+                  title="English"
+                  onPress={() => setLanguage('en')}
+                  color={language === 'en' ? '#007AFF' : '#8E8E93'}
+                />
+                <Button
+                  title="עברית"
+                  onPress={() => setLanguage('he')}
+                  color={language === 'he' ? '#007AFF' : '#8E8E93'}
+                />
+              </View>
+
+              <View style={{ marginTop: 16, marginBottom: 40 }}>
+                <Button
+                  title={saving ? t('saving', language) : t('save', language)}
+                  onPress={handleSave}
+                  disabled={saving}
+                />
+              </View>
+            </>
+          )}
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -195,5 +229,23 @@ const styles = StyleSheet.create({
     gap: 16,
     marginTop: 8,
     marginBottom: 8,
+  },
+  presetContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  presetButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  presetText: {
+    fontSize: 14,
+    fontWeight: '500',
+    textTransform: 'capitalize',
   },
 });

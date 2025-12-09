@@ -31,7 +31,7 @@ const ToolsStack: React.FC = () => {
       <Stack.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{ title: t('toolsProfile', language) }}
+        options={{ headerBackTitle: '' }}
       />
       <Stack.Screen
         name="Categories"
