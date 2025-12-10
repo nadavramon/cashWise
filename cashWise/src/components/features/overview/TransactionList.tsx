@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { View, Text, FlatList, StyleSheet, useColorScheme, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, FlatList, StyleSheet, useColorScheme, TouchableOpacity, Animated, ActivityIndicator } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { Transaction } from '../../../types/models';
@@ -85,25 +85,87 @@ const AnimatedTransactionRow: React.FC<{
     );
 };
 
+import { usePaginatedTransactions } from '../../../hooks/usePaginatedTransactions';
+
+// ... (keep AnimatedTransactionRow as is or move it if needed, but for now assuming it stays)
+
+// Helper to map API items to UI items if needed (local simple version)
+const mapToModel = (apiItem: any): Transaction => ({
+    ...apiItem,
+    type: apiItem.type === 'INCOME' ? 'income' : 'expense',
+    note: apiItem.note ?? undefined,
+    updatedAt: apiItem.updatedAt ?? undefined,
+});
+
 const TransactionList: React.FC<TransactionListProps> = () => {
     const { deleteTransaction } = useTransactions();
-    const { transactions } = useOverviewCycle();
+    // Get date range from cycle context
+    const { start, endExclusive } = useOverviewCycle();
+
+    const {
+        items: apiItems,
+        hasNextPage,
+        loadingInitial,
+        loadingMore,
+        refreshing,
+        loadMore,
+        refresh,
+    } = usePaginatedTransactions({
+        fromDate: start,
+        toDate: endExclusive,
+        pageSize: 20,
+    });
+
+    const items = apiItems.map(mapToModel);
+
+    const handleDelete = async (id: string, date: string) => {
+        await deleteTransaction(id, date);
+        refresh(); // Refresh list after deletion to sync state
+    };
 
     const renderListItem = ({ item }: { item: Transaction }) => {
         return (
             <AnimatedTransactionRow
                 item={item}
-                onDelete={() => deleteTransaction(item.id, item.date)}
+                onDelete={() => handleDelete(item.id, item.date)}
             />
         );
     };
 
+    if (loadingInitial) {
+        return (
+            <View style={{ padding: 20, alignItems: 'center' }}>
+                <ActivityIndicator size="large" />
+            </View>
+        );
+    }
+
     return (
         <FlatList
-            data={transactions}
+            data={items}
             keyExtractor={(item) => item.id}
             renderItem={renderListItem}
             contentContainerStyle={styles.scrollContent}
+            onEndReached={() => {
+                if (hasNextPage) loadMore();
+            }}
+            onEndReachedThreshold={0.2}
+            refreshing={refreshing}
+            onRefresh={refresh}
+            ListFooterComponent={
+                loadingMore ? (
+                    <View style={{ padding: 20, alignItems: 'center' }}>
+                        <ActivityIndicator size="small" />
+                    </View>
+                ) : null
+            }
+            ListEmptyComponent={
+                !loadingInitial ? (
+                    <View style={{ padding: 40, alignItems: 'center' }}>
+                        <Text style={{ color: '#999' }}>No transactions found</Text>
+                    </View>
+                ) : null
+            }
         />
     );
 };
