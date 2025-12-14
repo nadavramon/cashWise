@@ -3,7 +3,9 @@
   "compilerOptions": {
     "strict": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "jsx": "react-native",
+    "esModuleInterop": true
   },
   "include": [
     "cashWise/**/*",
