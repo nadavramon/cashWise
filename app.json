@@ -31,8 +31,6 @@
       }
     },
     "owner": "nadavramon",
-    "plugins": [
-      "expo-font"
-    ]
+    "plugins": ["expo-font"]
   }
 }

@@ -18,7 +18,6 @@ import { ToolsStackParamList } from "../../navigation/ToolsStack";
 import { useTransactions } from "../../context/TransactionsContext";
 import { apiExportTransactions } from "../../api/exportsApi";
 import { Ionicons } from "@expo/vector-icons";
-import { BlurView } from "expo-blur"; // Optional: for glass effect, or fallback to View
 import { t } from "../../config/i18n";
 import { useProfile } from "../../context/ProfileContext";
 

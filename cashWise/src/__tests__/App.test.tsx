@@ -1,5 +1,5 @@
-describe('Sanity Check', () => {
-    it('passes', () => {
-        expect(1).toBe(1);
-    });
+describe("Sanity Check", () => {
+  it("passes", () => {
+    // test body
+  });
 });
