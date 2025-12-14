@@ -188,7 +188,11 @@ const DashboardView: React.FC<DashboardViewProps> = ({
     [isDarkMode, themeColor],
   );
 
-  const datasetValues = chartData.datasets[0]?.data ?? [];
+  const datasetValues = React.useMemo(
+    () => chartData.datasets[0]?.data ?? [],
+    [chartData],
+  );
+
   const hideZeroPoints = React.useMemo(() => {
     return datasetValues.reduce<number[]>((acc, value, index) => {
       if (value === 0) acc.push(index);

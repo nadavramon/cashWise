@@ -3,14 +3,12 @@ import React, {
   useContext,
   useEffect,
   useState,
-  useMemo,
   useCallback,
   ReactNode,
 } from "react";
 import { useProfile } from "./ProfileContext";
 import {
   TransactionApi as ApiTransaction,
-  TransactionType as ApiTransactionType,
   apiListTransactions,
 } from "../api/transactionsApi";
 import { Transaction } from "../types/models";

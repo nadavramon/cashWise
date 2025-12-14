@@ -1,5 +1,3 @@
-import { I18nManager } from "react-native";
-
 export type LanguageCode = "en" | "he";
 
 export const TRANSLATIONS = {

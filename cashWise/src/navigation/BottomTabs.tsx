@@ -11,7 +11,7 @@ import {
 import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 // Stacks
 import OverviewStack from "./OverviewStack";
-import TransactionsStack from "./TransactionsStack";
+
 import ToolsStack from "./ToolsStack";
 import BudgetScreen from "../screens/main/BudgetScreen";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -51,6 +51,7 @@ const CustomTabBar: React.FC<any> = ({ state, descriptors, navigation }) => {
     indicatorScale.value = withTiming(1.05, { duration: 150 }, () => {
       indicatorScale.value = withTiming(1, { duration: 150 });
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.index, tabWidth]);
 
   const animatedIndicatorStyle = useAnimatedStyle(() => {

@@ -25,7 +25,7 @@ import OverviewHeader from "../../components/features/overview/OverviewHeader";
 
 const BudgetScreen: React.FC = () => {
   const isDark = useColorScheme() === "dark";
-  const { transactions, dateRange } = useTransactions();
+  const { transactions } = useTransactions();
   const { profile } = useProfile();
   const currencySymbol = getCurrencySymbol(profile?.currency);
   const language = profile?.language || "en";
@@ -47,7 +47,6 @@ const BudgetScreen: React.FC = () => {
     useState<RepoCategoryItem | null>(null);
 
   // Theme Colors
-  const textColor = isDark ? "#FFFFFF" : "#333333";
   const subTextColor = isDark ? "#CCCCCC" : "#666666";
   const themeColor = isDark ? "#02C3BD" : "#007CBE";
 

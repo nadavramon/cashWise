@@ -13,7 +13,7 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   RepoCategoryGroup,

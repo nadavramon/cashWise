@@ -16,12 +16,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useOverviewCycle } from "../../../context/CycleContext";
 import { useProfile } from "../../../context/ProfileContext";
 import { useCategories } from "../../../context/CategoriesContext";
-import {
-  computePeriodTotals,
-  groupDailySpending,
-} from "../../../utils/overview";
+import { computePeriodTotals } from "../../../utils/overview";
 import { getCurrencySymbol } from "../../../utils/currency";
-import { Category } from "../../../types/models";
 
 interface SpendingViewProps {
   themeColor: string;

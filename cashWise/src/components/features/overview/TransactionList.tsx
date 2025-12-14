@@ -20,7 +20,7 @@ import { useOverviewCycle } from "../../../context/CycleContext";
 import { usePaginatedTransactions } from "../../../hooks/usePaginatedTransactions";
 
 interface TransactionListProps {
-  // transactions provided by context
+  onScroll?: (event: any) => void;
 }
 
 const AnimatedTransactionRow: React.FC<{

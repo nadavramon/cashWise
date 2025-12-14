@@ -5,7 +5,7 @@ import React, {
   useState,
   ReactNode,
 } from "react";
-import { Category, CategoryType } from "../types/models";
+import { Category } from "../types/models";
 import {
   apiCreateCategory,
   apiDeleteCategory,

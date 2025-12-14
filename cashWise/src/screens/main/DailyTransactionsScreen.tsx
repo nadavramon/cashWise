@@ -40,14 +40,6 @@ const DailyTransactionsScreen: React.FC = () => {
 
   // Dynamic Title
   React.useLayoutEffect(() => {
-    const dateObj = new Date(date);
-    const locale = language === "he" ? "he-IL" : "en-US";
-    const dayName = dateObj.toLocaleDateString(locale, { weekday: "long" });
-    const dayNum = dateObj.getDate();
-    const monthName = dateObj
-      .toLocaleDateString(locale, { month: "short" })
-      .toUpperCase();
-
     navigation.setOptions({
       title: "",
       headerShadowVisible: false,
