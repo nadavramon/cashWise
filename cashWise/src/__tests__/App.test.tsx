@@ -1,5 +1,5 @@
 describe("Sanity Check", () => {
-  it("passes", () => {
-    // test body
-  });
+    it("passes", () => {
+        expect(true).toBe(true);
+    });
 });

@@ -145,6 +145,7 @@ const TabButton = ({ onPress, isFocused, options, label, tabWidth }: any) => {
 
   useEffect(() => {
     scale.value = withSpring(isFocused ? 1.2 : 1, { duration: 300 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFocused]);
 
   const animatedIconStyle = useAnimatedStyle(() => {
