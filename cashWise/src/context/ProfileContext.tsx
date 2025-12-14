@@ -4,14 +4,14 @@ import React, {
   useEffect,
   useState,
   ReactNode,
-} from 'react';
-import { useAuth } from './AuthContext';
+} from "react";
+import { useAuth } from "./AuthContext";
 import {
   apiGetUserProfile,
   apiUpdateUserProfile,
   UserProfileApi,
   UpdateUserProfileInputApi,
-} from '../api/profileApi';
+} from "../api/profileApi";
 
 export interface UserProfile {
   id: string;
@@ -42,14 +42,14 @@ const ProfileContext = createContext<ProfileContextValue | undefined>(
 export const useProfile = (): ProfileContextValue => {
   const ctx = useContext(ProfileContext);
   if (!ctx) {
-    throw new Error('useProfile must be used within ProfileProvider');
+    throw new Error("useProfile must be used within ProfileProvider");
   }
   return ctx;
 };
 
 const mapApiToProfile = (p: UserProfileApi): UserProfile => ({
   id: p.userId,
-  email: p.email || '',
+  email: p.email || "",
   createdAt: p.createdAt,
   currency: p.currency ?? undefined,
   overviewDateRangePreset: p.overviewDateRangePreset ?? undefined,
@@ -85,8 +85,8 @@ export const ProfileProvider: React.FC<{ children: ReactNode }> = ({
         setProfile(null);
       }
     } catch (e: any) {
-      console.error('Failed to load profile', e);
-      setError(e?.message ?? 'Failed to load profile');
+      console.error("Failed to load profile", e);
+      setError(e?.message ?? "Failed to load profile");
     } finally {
       setLoading(false);
     }
@@ -98,15 +98,15 @@ export const ProfileProvider: React.FC<{ children: ReactNode }> = ({
   }, [userId]);
 
   const saveProfile = async (patch: UpdateUserProfileInputApi) => {
-    if (!userId) throw new Error('Not signed in');
+    if (!userId) throw new Error("Not signed in");
 
     try {
       setError(null);
       const updated = await apiUpdateUserProfile(patch);
       setProfile(mapApiToProfile(updated));
     } catch (e: any) {
-      console.error('Failed to save profile', e);
-      setError(e?.message ?? 'Failed to save profile');
+      console.error("Failed to save profile", e);
+      setError(e?.message ?? "Failed to save profile");
       throw e;
     }
   };

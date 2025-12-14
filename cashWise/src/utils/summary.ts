@@ -1,4 +1,4 @@
-import { Category, Transaction } from '../types/models';
+import { Category, Transaction } from "../types/models";
 
 export interface SummaryResult {
   totalIncome: number;
@@ -7,7 +7,7 @@ export interface SummaryResult {
   byCategory: {
     categoryId: string;
     categoryName: string;
-    type: 'income' | 'expense' | 'both';
+    type: "income" | "expense" | "both";
     totalAmount: number;
   }[];
 }
@@ -29,9 +29,9 @@ export function calculateSummary(
   for (const tx of transactions) {
     if (!tx.includeInStats) continue;
 
-    if (tx.type === 'income') {
+    if (tx.type === "income") {
       totalIncome += tx.amount;
-    } else if (tx.type === 'expense') {
+    } else if (tx.type === "expense") {
       totalExpense += tx.amount;
     }
 
@@ -39,7 +39,7 @@ export function calculateSummary(
     categoryTotals.set(tx.categoryId, current + tx.amount);
   }
 
-  const byCategory: SummaryResult['byCategory'] = [];
+  const byCategory: SummaryResult["byCategory"] = [];
   categoryTotals.forEach((amount, categoryId) => {
     const category = categoryMap.get(categoryId);
     if (!category) return;

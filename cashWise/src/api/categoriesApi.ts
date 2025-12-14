@@ -1,13 +1,13 @@
 // src/api/categoriesApi.ts
-import { graphqlClient } from './graphqlClient';
+import { graphqlClient } from "./graphqlClient";
 import {
   CREATE_CATEGORY,
   LIST_CATEGORIES,
   DELETE_CATEGORY,
   UPDATE_CATEGORY,
-} from './operations';
+} from "./operations";
 
-export type CategoryTypeApi = 'INCOME' | 'EXPENSE';
+export type CategoryTypeApi = "INCOME" | "EXPENSE";
 
 export interface CategoryApi {
   id: string;
@@ -54,8 +54,8 @@ export async function apiCreateCategory(
     variables: { input },
   });
 
-  if (!('data' in result) || !result.data?.createCategory) {
-    throw new Error('createCategory returned no data');
+  if (!("data" in result) || !result.data?.createCategory) {
+    throw new Error("createCategory returned no data");
   }
 
   return result.data.createCategory;
@@ -66,8 +66,8 @@ export async function apiListCategories(): Promise<CategoryApi[]> {
     query: LIST_CATEGORIES,
   });
 
-  if (!('data' in result) || !result.data?.listCategories) {
-    throw new Error('listCategories returned no data');
+  if (!("data" in result) || !result.data?.listCategories) {
+    throw new Error("listCategories returned no data");
   }
 
   return result.data.listCategories;
@@ -79,8 +79,8 @@ export async function apiDeleteCategory(id: string): Promise<boolean> {
     variables: { id },
   });
 
-  if (!('data' in result) || typeof result.data?.deleteCategory !== 'boolean') {
-    throw new Error('deleteCategory returned no data');
+  if (!("data" in result) || typeof result.data?.deleteCategory !== "boolean") {
+    throw new Error("deleteCategory returned no data");
   }
 
   return result.data.deleteCategory;
@@ -94,8 +94,8 @@ export async function apiUpdateCategory(
     variables: { input },
   });
 
-  if (!('data' in result) || typeof result.data?.updateCategory !== 'boolean') {
-    throw new Error('updateCategory returned no data');
+  if (!("data" in result) || typeof result.data?.updateCategory !== "boolean") {
+    throw new Error("updateCategory returned no data");
   }
 
   return result.data.updateCategory;

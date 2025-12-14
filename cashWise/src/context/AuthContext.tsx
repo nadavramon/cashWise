@@ -1,4 +1,4 @@
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext } from "react";
 
 export interface AuthContextValue {
   user: any | null;
@@ -13,7 +13,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export const useAuth = (): AuthContextValue => {
   const ctx = useContext(AuthContext);
   if (!ctx) {
-    throw new Error('useAuth must be used inside AuthContext.Provider');
+    throw new Error("useAuth must be used inside AuthContext.Provider");
   }
   return ctx;
 };

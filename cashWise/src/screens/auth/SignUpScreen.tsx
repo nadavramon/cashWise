@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,22 +7,22 @@ import {
   Button,
   Alert,
   TouchableOpacity,
-} from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { signUp } from 'aws-amplify/auth';
-import { AuthStackParamList } from '../../navigation/AuthStack';
+} from "react-native";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { signUp } from "aws-amplify/auth";
+import { AuthStackParamList } from "../../navigation/AuthStack";
 
-type Props = NativeStackScreenProps<AuthStackParamList, 'SignUp'>;
+type Props = NativeStackScreenProps<AuthStackParamList, "SignUp">;
 
 const SignUpScreen: React.FC<Props> = ({ navigation }) => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const handleSignUp = async () => {
     if (!username || !email || !password) {
-      Alert.alert('Missing fields', 'Please fill all fields.');
+      Alert.alert("Missing fields", "Please fill all fields.");
       return;
     }
 
@@ -39,13 +39,13 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
       });
 
       Alert.alert(
-        'Account created',
-        'Enter the confirmation code we just emailed you.',
+        "Account created",
+        "Enter the confirmation code we just emailed you.",
       );
-      navigation.navigate('ConfirmSignUp', { username: username.trim() });
+      navigation.navigate("ConfirmSignUp", { username: username.trim() });
     } catch (err: any) {
-      console.error('SignUp error', err);
-      Alert.alert('Sign up failed', err.message || 'Please try again.');
+      console.error("SignUp error", err);
+      Alert.alert("Sign up failed", err.message || "Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -85,7 +85,7 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
 
       <View style={{ marginTop: 16 }}>
         <Button
-          title={submitting ? 'Signing up...' : 'Sign Up'}
+          title={submitting ? "Signing up..." : "Sign Up"}
           onPress={handleSignUp}
           disabled={submitting}
         />
@@ -93,7 +93,7 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
 
       <TouchableOpacity
         style={{ marginTop: 16 }}
-        onPress={() => navigation.navigate('SignIn')}
+        onPress={() => navigation.navigate("SignIn")}
       >
         <Text style={styles.link}>Already have an account? Sign In</Text>
       </TouchableOpacity>
@@ -107,17 +107,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
-    textAlign: 'center',
+    fontWeight: "700",
+    textAlign: "center",
     marginBottom: 24,
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     marginTop: 12,
     marginBottom: 4,
   },
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   link: {
-    color: '#0066cc',
-    textAlign: 'center',
+    color: "#0066cc",
+    textAlign: "center",
   },
 });

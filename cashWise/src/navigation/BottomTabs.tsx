@@ -1,16 +1,28 @@
-import React, { useEffect } from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { StyleSheet, Platform, View, useWindowDimensions, TouchableOpacity, Text } from 'react-native';
-import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
+import React, { useEffect } from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import {
+  StyleSheet,
+  Platform,
+  View,
+  useWindowDimensions,
+  TouchableOpacity,
+  Text,
+} from "react-native";
+import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 // Stacks
-import OverviewStack from './OverviewStack';
-import TransactionsStack from './TransactionsStack';
-import ToolsStack from './ToolsStack';
-import BudgetScreen from '../screens/main/BudgetScreen';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming, withSpring } from 'react-native-reanimated';
-import { useProfile } from '../context/ProfileContext';
-import { t } from '../config/i18n';
+import OverviewStack from "./OverviewStack";
+import TransactionsStack from "./TransactionsStack";
+import ToolsStack from "./ToolsStack";
+import BudgetScreen from "../screens/main/BudgetScreen";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+  withSpring,
+} from "react-native-reanimated";
+import { useProfile } from "../context/ProfileContext";
+import { t } from "../config/i18n";
 
 export type RootTabParamList = {
   Overview: undefined;
@@ -23,7 +35,7 @@ const Tab = createBottomTabNavigator<RootTabParamList>();
 const CustomTabBar: React.FC<any> = ({ state, descriptors, navigation }) => {
   const { width } = useWindowDimensions();
   const MARGIN_H = 80;
-  const totalWidth = width - (MARGIN_H * 2);
+  const totalWidth = width - MARGIN_H * 2;
   const tabWidth = totalWidth / state.routes.length;
 
   const translateX = useSharedValue(0);
@@ -45,7 +57,7 @@ const CustomTabBar: React.FC<any> = ({ state, descriptors, navigation }) => {
     return {
       transform: [
         { translateX: translateX.value },
-        { scale: indicatorScale.value }
+        { scale: indicatorScale.value },
       ],
     };
   });
@@ -53,14 +65,25 @@ const CustomTabBar: React.FC<any> = ({ state, descriptors, navigation }) => {
   return (
     <View style={[styles.tabBar, { width: totalWidth }]}>
       {/* Tab Bar Background */}
-      {Platform.OS === 'ios' && isLiquidGlassAvailable() ? (
-        <GlassView style={[StyleSheet.absoluteFill, { borderRadius: 24, overflow: 'hidden' }]} glassEffectStyle="clear" />
+      {Platform.OS === "ios" && isLiquidGlassAvailable() ? (
+        <GlassView
+          style={[
+            StyleSheet.absoluteFill,
+            { borderRadius: 24, overflow: "hidden" },
+          ]}
+          glassEffectStyle="clear"
+        />
       ) : (
-        <View style={[StyleSheet.absoluteFill, { borderRadius: 24, backgroundColor: 'rgba(15,23,42,0.9)' }]} />
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            { borderRadius: 24, backgroundColor: "rgba(15,23,42,0.9)" },
+          ]}
+        />
       )}
 
       {/* Sliding Glass Indicator */}
-      {Platform.OS === 'ios' && isLiquidGlassAvailable() && (
+      {Platform.OS === "ios" && isLiquidGlassAvailable() && (
         <Animated.View
           style={[
             styles.slidingIndicator,
@@ -68,7 +91,10 @@ const CustomTabBar: React.FC<any> = ({ state, descriptors, navigation }) => {
             animatedIndicatorStyle,
           ]}
         >
-          <GlassView style={StyleSheet.absoluteFill} glassEffectStyle="regular" />
+          <GlassView
+            style={StyleSheet.absoluteFill}
+            glassEffectStyle="regular"
+          />
         </Animated.View>
       )}
 
@@ -87,7 +113,7 @@ const CustomTabBar: React.FC<any> = ({ state, descriptors, navigation }) => {
 
           const onPress = () => {
             const event = navigation.emit({
-              type: 'tabPress',
+              type: "tabPress",
               target: route.key,
               canPreventDefault: true,
             });
@@ -136,9 +162,19 @@ const TabButton = ({ onPress, isFocused, options, label, tabWidth }: any) => {
       activeOpacity={0.7}
     >
       <Animated.View style={[styles.iconWrapper, animatedIconStyle]}>
-        {IconRenderer && <IconRenderer focused={isFocused} color={isFocused ? '#ffffffff' : '#ffffffff'} />}
+        {IconRenderer && (
+          <IconRenderer
+            focused={isFocused}
+            color={isFocused ? "#ffffffff" : "#ffffffff"}
+          />
+        )}
       </Animated.View>
-      <Text style={[styles.tabLabel, { color: isFocused ? '#ffffffff' : '#ffffffff' }]}>
+      <Text
+        style={[
+          styles.tabLabel,
+          { color: isFocused ? "#ffffffff" : "#ffffffff" },
+        ]}
+      >
         {label}
       </Text>
     </TouchableOpacity>
@@ -147,7 +183,7 @@ const TabButton = ({ onPress, isFocused, options, label, tabWidth }: any) => {
 
 const BottomTabs: React.FC = () => {
   const { profile } = useProfile();
-  const language = profile?.language || 'en';
+  const language = profile?.language || "en";
 
   return (
     <Tab.Navigator
@@ -165,7 +201,7 @@ const BottomTabs: React.FC = () => {
           tabBarIcon: ({ color }) => (
             <MaterialIcons name="space-dashboard" size={24} color={color} />
           ),
-          tabBarLabel: t('navOverview', language),
+          tabBarLabel: t("navOverview", language),
         }}
       />
       <Tab.Screen
@@ -175,7 +211,7 @@ const BottomTabs: React.FC = () => {
           tabBarIcon: ({ color }) => (
             <MaterialIcons name="pie-chart" size={24} color={color} />
           ),
-          tabBarLabel: t('navBudget', language),
+          tabBarLabel: t("navBudget", language),
         }}
       />
       <Tab.Screen
@@ -185,7 +221,7 @@ const BottomTabs: React.FC = () => {
           tabBarIcon: ({ color }) => (
             <MaterialIcons name="construction" size={24} color={color} />
           ),
-          tabBarLabel: t('navTools', language),
+          tabBarLabel: t("navTools", language),
         }}
       />
     </Tab.Navigator>
@@ -196,14 +232,14 @@ export default BottomTabs;
 
 const styles = StyleSheet.create({
   tabBar: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 24,
     left: 80,
     right: 80,
     height: 64,
     borderRadius: 24,
-    backgroundColor: 'transparent',
-    shadowColor: '#000',
+    backgroundColor: "transparent",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 4,
@@ -213,30 +249,30 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   tabsContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     flex: 1,
   },
   tabButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100%',
+    justifyContent: "center",
+    alignItems: "center",
+    height: "100%",
   },
   slidingIndicator: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     bottom: 0,
     borderRadius: 24,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   iconWrapper: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     width: 40,
     height: 32,
   },
   tabLabel: {
     fontSize: 10,
-    fontWeight: '600',
+    fontWeight: "600",
     marginTop: 2,
   },
 });

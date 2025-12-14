@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -9,48 +9,51 @@ import {
   useColorScheme,
   ScrollView,
   ActivityIndicator,
-} from 'react-native';
-import { signOut } from 'aws-amplify/auth';
-import { useAuth } from '../../context/AuthContext';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ToolsStackParamList } from '../../navigation/ToolsStack';
-import { useTransactions } from '../../context/TransactionsContext';
-import { apiExportTransactions } from '../../api/exportsApi';
-import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur'; // Optional: for glass effect, or fallback to View
-import { t } from '../../config/i18n';
-import { useProfile } from '../../context/ProfileContext';
+} from "react-native";
+import { signOut } from "aws-amplify/auth";
+import { useAuth } from "../../context/AuthContext";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { ToolsStackParamList } from "../../navigation/ToolsStack";
+import { useTransactions } from "../../context/TransactionsContext";
+import { apiExportTransactions } from "../../api/exportsApi";
+import { Ionicons } from "@expo/vector-icons";
+import { BlurView } from "expo-blur"; // Optional: for glass effect, or fallback to View
+import { t } from "../../config/i18n";
+import { useProfile } from "../../context/ProfileContext";
 
-type Props = NativeStackScreenProps<ToolsStackParamList, 'ToolsHome'>;
+type Props = NativeStackScreenProps<ToolsStackParamList, "ToolsHome">;
 
 const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
   const { username, email, setUser } = useAuth();
   const { dateRange } = useTransactions();
   const { profile } = useProfile();
-  const language = profile?.language || 'en';
+  const language = profile?.language || "en";
   const [exporting, setExporting] = useState(false);
-  const isDark = useColorScheme() === 'dark';
+  const isDark = useColorScheme() === "dark";
 
   // Theme Colors
-  const textColor = isDark ? '#FFFFFF' : '#1A1A1A';
-  const subTextColor = isDark ? '#CCCCCC' : '#666666';
-  const cardBg = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)';
-  const cardBorder = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
+  const textColor = isDark ? "#FFFFFF" : "#1A1A1A";
+  const subTextColor = isDark ? "#CCCCCC" : "#666666";
+  const cardBg = isDark ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.8)";
+  const cardBorder = isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)";
 
   const handleSignOut = async () => {
-    Alert.alert(t('signOut', language), t('signOutConfirm', language), [
-      { text: t('cancel', language), style: 'cancel' },
+    Alert.alert(t("signOut", language), t("signOutConfirm", language), [
+      { text: t("cancel", language), style: "cancel" },
       {
-        text: t('signOut', language),
-        style: 'destructive',
+        text: t("signOut", language),
+        style: "destructive",
         onPress: async () => {
           try {
             await signOut();
             setUser(null);
           } catch (err: any) {
-            console.error('SignOut error', err);
-            Alert.alert(t('error', language), err.message || 'Failed to sign out.');
+            console.error("SignOut error", err);
+            Alert.alert(
+              t("error", language),
+              err.message || "Failed to sign out.",
+            );
           }
         },
       },
@@ -59,7 +62,7 @@ const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
 
   const handleExport = async () => {
     if (!dateRange) {
-      Alert.alert(t('noRange', language), t('noRangeMessage', language));
+      Alert.alert(t("noRange", language), t("noRangeMessage", language));
       return;
     }
 
@@ -72,11 +75,17 @@ const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
       if (url && (await Linking.canOpenURL(url))) {
         Linking.openURL(url);
       } else {
-        Alert.alert(t('exportReady', language), t('downloadUrlCopied', language) + url);
+        Alert.alert(
+          t("exportReady", language),
+          t("downloadUrlCopied", language) + url,
+        );
       }
     } catch (err: any) {
-      console.error('Export failed', err);
-      Alert.alert(t('exportFailed', language), err?.message ?? t('exportFailedMessage', language));
+      console.error("Export failed", err);
+      Alert.alert(
+        t("exportFailed", language),
+        err?.message ?? t("exportFailedMessage", language),
+      );
     } finally {
       setExporting(false);
     }
@@ -106,7 +115,7 @@ const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
       onPress={onPress}
       disabled={loading}
     >
-      <View style={[styles.iconContainer, { backgroundColor: color + '20' }]}>
+      <View style={[styles.iconContainer, { backgroundColor: color + "20" }]}>
         {loading ? (
           <ActivityIndicator color={color} size="small" />
         ) : (
@@ -134,7 +143,9 @@ const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
-          <Text style={[styles.pageTitle, { color: textColor }]}>{t('navTools', language)}</Text>
+          <Text style={[styles.pageTitle, { color: textColor }]}>
+            {t("navTools", language)}
+          </Text>
         </View>
 
         {/* User Info Card */}
@@ -146,21 +157,21 @@ const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
         >
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>
-              {(username?.[0] || 'U').toUpperCase()}
+              {(username?.[0] || "U").toUpperCase()}
             </Text>
           </View>
           <View>
             <Text style={[styles.username, { color: textColor }]}>
-              {username || 'User'}
+              {username || "User"}
             </Text>
             <Text style={[styles.email, { color: subTextColor }]}>
-              {email || 'No email'}
+              {email || "No email"}
             </Text>
           </View>
         </View>
 
         <Text style={[styles.sectionHeader, { color: subTextColor }]}>
-          {t('general', language)}
+          {t("general", language)}
         </Text>
 
         {/* Grid Layout */}
@@ -168,30 +179,32 @@ const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
           {/* 1. Profile */}
           <View style={styles.gridItem}>
             <ToolCard
-              title={t('toolsProfile', language)}
-              subtitle={t('editDetails', language)}
+              title={t("toolsProfile", language)}
+              subtitle={t("editDetails", language)}
               icon="person"
               color="#007CBE" // CashWise Blue
-              onPress={() => navigation.navigate('Profile')}
+              onPress={() => navigation.navigate("Profile")}
             />
           </View>
 
           {/* 2. Categories */}
           <View style={styles.gridItem}>
             <ToolCard
-              title={t('category', language)}
-              subtitle={t('manageTags', language)}
+              title={t("category", language)}
+              subtitle={t("manageTags", language)}
               icon="pricetags"
               color="#9D4EDD" // CashWise Purple
-              onPress={() => navigation.navigate('Categories')}
+              onPress={() => navigation.navigate("Categories")}
             />
           </View>
 
           {/* 3. Export Data */}
           <View style={styles.gridItem}>
             <ToolCard
-              title={exporting ? t('saving', language) : t('exportCSV', language)}
-              subtitle={t('getYourData', language)}
+              title={
+                exporting ? t("saving", language) : t("exportCSV", language)
+              }
+              subtitle={t("getYourData", language)}
               icon="download"
               color="#F5C518" // CashWise Gold
               onPress={handleExport}
@@ -202,8 +215,8 @@ const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
           {/* 4. Sign Out */}
           <View style={styles.gridItem}>
             <ToolCard
-              title={t('signOut', language)}
-              subtitle={t('logOutSafely', language)}
+              title={t("signOut", language)}
+              subtitle={t("logOutSafely", language)}
               icon="log-out"
               color="#FF6B6B" // Danger Red
               onPress={handleSignOut}
@@ -212,7 +225,7 @@ const ToolsScreenMain: React.FC<Props> = ({ navigation }) => {
         </View>
 
         <Text style={[styles.versionText, { color: subTextColor }]}>
-          {t('version', language)} 1.0.0
+          {t("version", language)} 1.0.0
         </Text>
       </ScrollView>
     </SafeAreaView>
@@ -234,11 +247,11 @@ const styles = StyleSheet.create({
   },
   pageTitle: {
     fontSize: 32,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   userCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
     borderRadius: 16,
     borderWidth: 1,
@@ -248,38 +261,38 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#007CBE',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#007CBE",
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 16,
   },
   avatarText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   username: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   email: {
     fontSize: 14,
   },
   sectionHeader: {
     fontSize: 14,
-    fontWeight: '600',
-    textTransform: 'uppercase',
+    fontWeight: "600",
+    textTransform: "uppercase",
     letterSpacing: 1,
     marginBottom: 12,
     marginLeft: 4,
   },
   gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 12, // Gap between rows/columns (requires newer RN, use margins if older)
   },
   gridItem: {
-    width: '48%', // Roughly half width minus gap
+    width: "48%", // Roughly half width minus gap
     marginBottom: 12,
   },
   card: {
@@ -287,30 +300,30 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     minHeight: 140, // Ensure consistent height for grid look
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   },
   iconContainer: {
     width: 44,
     height: 44,
     borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 12,
   },
   cardContent: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
   },
   cardTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 2,
   },
   cardSubtitle: {
     fontSize: 12,
   },
   versionText: {
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 12,
     marginTop: 32,
     opacity: 0.5,

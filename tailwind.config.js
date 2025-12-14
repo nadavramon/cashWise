@@ -4,10 +4,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'cw-blue': '#007CBE',
-        'cw-yellow': '#FFF7AE',
-        'cw-teal': '#02C3BD',
-        'cw-purple': '#4E148C',
+        "cw-blue": "#007CBE",
+        "cw-yellow": "#FFF7AE",
+        "cw-teal": "#02C3BD",
+        "cw-purple": "#4E148C",
       },
     },
   },

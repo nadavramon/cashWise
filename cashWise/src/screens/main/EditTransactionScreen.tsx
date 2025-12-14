@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -12,18 +12,18 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Platform,
-} from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { TransactionsStackParamList } from '../../navigation/TransactionsStack';
-import { useTransactions } from '../../context/TransactionsContext';
-import { useCategories } from '../../context/CategoriesContext';
-import { Transaction } from '../../types/models';
-import { t } from '../../config/i18n';
-import { useProfile } from '../../context/ProfileContext';
+} from "react-native";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { TransactionsStackParamList } from "../../navigation/TransactionsStack";
+import { useTransactions } from "../../context/TransactionsContext";
+import { useCategories } from "../../context/CategoriesContext";
+import { Transaction } from "../../types/models";
+import { t } from "../../config/i18n";
+import { useProfile } from "../../context/ProfileContext";
 
 type Props = NativeStackScreenProps<
   TransactionsStackParamList,
-  'EditTransaction'
+  "EditTransaction"
 >;
 
 const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
@@ -31,12 +31,12 @@ const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
   const { transactions, updateTransaction } = useTransactions();
   const { categories } = useCategories();
   const { profile } = useProfile();
-  const language = profile?.language || 'en';
+  const language = profile?.language || "en";
 
-  const [type, setType] = useState<'income' | 'expense'>('expense');
-  const [amount, setAmount] = useState('');
+  const [type, setType] = useState<"income" | "expense">("expense");
+  const [amount, setAmount] = useState("");
   const [categoryId, setCategoryId] = useState<string | null>(null);
-  const [note, setNote] = useState('');
+  const [note, setNote] = useState("");
   const [includeInStats, setIncludeInStats] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -48,16 +48,16 @@ const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
   useEffect(() => {
     if (!transaction) return;
 
-    setType(transaction.type === 'income' ? 'income' : 'expense');
+    setType(transaction.type === "income" ? "income" : "expense");
     setAmount(String(transaction.amount));
     setCategoryId(transaction.categoryId);
-    setNote(transaction.note ?? '');
+    setNote(transaction.note ?? "");
     setIncludeInStats(transaction.includeInStats);
   }, [transaction]);
 
   const filteredCategories = useMemo(() => {
     return categories
-      .filter((c) => c.type === type || c.type === 'both')
+      .filter((c) => c.type === type || c.type === "both")
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [categories, type]);
 
@@ -67,12 +67,18 @@ const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
     const parsedAmount = parseFloat(amount);
 
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      Alert.alert(t('invalidAmount', language), t('pleaseEnterPositiveAmount', language));
+      Alert.alert(
+        t("invalidAmount", language),
+        t("pleaseEnterPositiveAmount", language),
+      );
       return;
     }
 
     if (!categoryId) {
-      Alert.alert(t('missingCategory', language), t('pleaseSelectCategory', language));
+      Alert.alert(
+        t("missingCategory", language),
+        t("pleaseSelectCategory", language),
+      );
       return;
     }
 
@@ -90,8 +96,8 @@ const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
       navigation.goBack();
     } catch (e: any) {
       Alert.alert(
-        t('error', language),
-        e?.message ?? t('failedToUpdate', language),
+        t("error", language),
+        e?.message ?? t("failedToUpdate", language),
       );
     } finally {
       setSubmitting(false);
@@ -102,7 +108,7 @@ const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
     return (
       <View style={styles.center}>
         <Text style={styles.errorText}>
-          {t('transactionNotFound', language)}
+          {t("transactionNotFound", language)}
         </Text>
       </View>
     );
@@ -111,7 +117,7 @@ const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
   return (
     <KeyboardAvoidingView
       style={styles.screen}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
@@ -121,34 +127,34 @@ const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
           <Text style={styles.label}>Type</Text>
           <View style={styles.row}>
             <TouchableOpacity
-              style={[styles.chip, type === 'expense' && styles.chipSelected]}
-              onPress={() => setType('expense')}
+              style={[styles.chip, type === "expense" && styles.chipSelected]}
+              onPress={() => setType("expense")}
             >
               <Text
                 style={[
                   styles.chipText,
-                  type === 'expense' && styles.chipTextSelected,
+                  type === "expense" && styles.chipTextSelected,
                 ]}
               >
-                {t('expense', language)}
+                {t("expense", language)}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.chip, type === 'income' && styles.chipSelected]}
-              onPress={() => setType('income')}
+              style={[styles.chip, type === "income" && styles.chipSelected]}
+              onPress={() => setType("income")}
             >
               <Text
                 style={[
                   styles.chipText,
-                  type === 'income' && styles.chipTextSelected,
+                  type === "income" && styles.chipTextSelected,
                 ]}
               >
-                {t('income', language)}
+                {t("income", language)}
               </Text>
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.label}>{t('amount', language)}</Text>
+          <Text style={styles.label}>{t("amount", language)}</Text>
           <TextInput
             style={styles.input}
             value={amount}
@@ -157,13 +163,14 @@ const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
             placeholder="e.g. 120.50"
           />
 
-          <Text style={styles.label}>{t('date', language)}</Text>
+          <Text style={styles.label}>{t("date", language)}</Text>
           <Text style={styles.readonlyValue}>{transaction.date}</Text>
 
-          <Text style={styles.label}>{t('category', language)}</Text>
+          <Text style={styles.label}>{t("category", language)}</Text>
           <View style={styles.categoryContainer}>
             {filteredCategories.map((c) => {
-              const baseColor = c.color ?? (c.type === 'income' ? '#0a7f42' : '#b00020');
+              const baseColor =
+                c.color ?? (c.type === "income" ? "#0a7f42" : "#b00020");
               const isSelected = categoryId === c.id;
               return (
                 <TouchableOpacity
@@ -171,14 +178,14 @@ const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
                   style={[
                     styles.categoryChip,
                     { borderColor: baseColor },
-                    isSelected && [{ backgroundColor: baseColor + '20' }],
+                    isSelected && [{ backgroundColor: baseColor + "20" }],
                   ]}
                   onPress={() => setCategoryId(c.id)}
                 >
                   <Text
                     style={[
                       styles.categoryChipText,
-                      isSelected && { color: baseColor, fontWeight: '600' },
+                      isSelected && { color: baseColor, fontWeight: "600" },
                     ]}
                   >
                     {c.name}
@@ -188,7 +195,7 @@ const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
             })}
           </View>
 
-          <Text style={styles.label}>{t('note', language)} (optional)</Text>
+          <Text style={styles.label}>{t("note", language)} (optional)</Text>
           <TextInput
             style={[styles.input, { height: 60 }]}
             value={note}
@@ -196,17 +203,19 @@ const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
             multiline
           />
 
-          <View style={[styles.row, { marginTop: 16, alignItems: 'center' }]}>
-            <Text style={styles.label}>{t('includeInStats', language)}</Text>
+          <View style={[styles.row, { marginTop: 16, alignItems: "center" }]}>
+            <Text style={styles.label}>{t("includeInStats", language)}</Text>
             <Button
-              title={includeInStats ? t('yes', language) : t('no', language)}
+              title={includeInStats ? t("yes", language) : t("no", language)}
               onPress={() => setIncludeInStats((prev) => !prev)}
             />
           </View>
 
           <View style={{ marginTop: 24 }}>
             <Button
-              title={submitting ? t('saving', language) : t('saveChanges', language)}
+              title={
+                submitting ? t("saving", language) : t("saveChanges", language)
+              }
               onPress={handleSave}
               disabled={submitting}
             />
@@ -229,17 +238,17 @@ const styles = StyleSheet.create({
   center: {
     flex: 1,
     padding: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   errorText: {
     fontSize: 14,
-    color: '#b00020',
-    textAlign: 'center',
+    color: "#b00020",
+    textAlign: "center",
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     marginTop: 12,
     marginBottom: 4,
   },
@@ -250,7 +259,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
   },
   chip: {
@@ -260,17 +269,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   chipSelected: {
-    backgroundColor: '#333',
+    backgroundColor: "#333",
   },
   chipText: {
     fontSize: 14,
   },
   chipTextSelected: {
-    color: '#fff',
+    color: "#fff",
   },
   categoryContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
   },
   categoryChip: {
@@ -281,13 +290,13 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   categoryChipSelected: {
-    backgroundColor: '#333',
+    backgroundColor: "#333",
   },
   categoryChipText: {
     fontSize: 14,
   },
   categoryChipTextSelected: {
-    color: '#fff',
+    color: "#fff",
   },
   readonlyValue: {
     fontSize: 16,

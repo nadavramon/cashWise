@@ -4,8 +4,8 @@ import React, {
   useEffect,
   useState,
   ReactNode,
-} from 'react';
-import { Category, CategoryType } from '../types/models';
+} from "react";
+import { Category, CategoryType } from "../types/models";
 import {
   apiCreateCategory,
   apiDeleteCategory,
@@ -14,13 +14,13 @@ import {
   CategoryApi,
   CreateCategoryInputApi,
   UpdateCategoryInputApi,
-} from '../api/categoriesApi';
-import { useAuth } from './AuthContext';
-import { CATEGORY_REPO, RepoCategoryItem } from '../data/categoryRepo';
+} from "../api/categoriesApi";
+import { useAuth } from "./AuthContext";
+import { CATEGORY_REPO, RepoCategoryItem } from "../data/categoryRepo";
 
 interface AddCategoryInput {
   name: string;
-  type: 'income' | 'expense';
+  type: "income" | "expense";
   color?: string;
 }
 
@@ -33,11 +33,11 @@ interface CategoriesContextValue {
   deleteCategory: (id: string) => Promise<void>;
   updateCategory: (
     id: string,
-    input: { name?: string; type?: 'income' | 'expense'; color?: string },
+    input: { name?: string; type?: "income" | "expense"; color?: string },
   ) => Promise<void>;
   addCategoryFromRepo: (
     groupId: string,
-    item: RepoCategoryItem
+    item: RepoCategoryItem,
   ) => Promise<void>;
 }
 
@@ -48,7 +48,7 @@ const CategoriesContext = createContext<CategoriesContextValue | undefined>(
 export const useCategories = (): CategoriesContextValue => {
   const ctx = useContext(CategoriesContext);
   if (!ctx) {
-    throw new Error('useCategories must be used within CategoriesProvider');
+    throw new Error("useCategories must be used within CategoriesProvider");
   }
   return ctx;
 };
@@ -58,7 +58,7 @@ function mapApiToUi(cat: CategoryApi): Category {
     id: cat.id,
     userId: cat.userId,
     name: cat.name,
-    type: cat.type === 'INCOME' ? 'income' : 'expense',
+    type: cat.type === "INCOME" ? "income" : "expense",
     color: cat.color ?? undefined,
     createdAt: cat.createdAt,
   };
@@ -85,8 +85,8 @@ export const CategoriesProvider: React.FC<{ children: ReactNode }> = ({
       const apiCats = await apiListCategories();
       setCategories(apiCats.map(mapApiToUi));
     } catch (e: any) {
-      console.error('Failed to load categories', e);
-      setError(e?.message ?? 'Failed to load categories');
+      console.error("Failed to load categories", e);
+      setError(e?.message ?? "Failed to load categories");
     } finally {
       setLoading(false);
     }
@@ -98,11 +98,11 @@ export const CategoriesProvider: React.FC<{ children: ReactNode }> = ({
   }, [userId]);
 
   const addCategory = async (input: AddCategoryInput) => {
-    if (!userId) throw new Error('Not signed in');
+    if (!userId) throw new Error("Not signed in");
 
     const apiInput: CreateCategoryInputApi = {
       name: input.name,
-      type: input.type === 'income' ? 'INCOME' : 'EXPENSE',
+      type: input.type === "income" ? "INCOME" : "EXPENSE",
       color: input.color,
     };
 
@@ -112,14 +112,14 @@ export const CategoriesProvider: React.FC<{ children: ReactNode }> = ({
       const uiCat = mapApiToUi(created);
       setCategories((prev) => [...prev, uiCat]);
     } catch (e: any) {
-      console.error('Failed to create category', e);
-      setError(e?.message ?? 'Failed to create category');
+      console.error("Failed to create category", e);
+      setError(e?.message ?? "Failed to create category");
       throw e;
     }
   };
 
   const deleteCategory = async (id: string) => {
-    if (!userId) throw new Error('Not signed in');
+    if (!userId) throw new Error("Not signed in");
 
     try {
       setError(null);
@@ -128,25 +128,25 @@ export const CategoriesProvider: React.FC<{ children: ReactNode }> = ({
         setCategories((prev) => prev.filter((c) => c.id !== id));
       }
     } catch (e: any) {
-      console.error('Failed to delete category', e);
-      setError(e?.message ?? 'Failed to delete category');
+      console.error("Failed to delete category", e);
+      setError(e?.message ?? "Failed to delete category");
       throw e;
     }
   };
 
   const updateCategory = async (
     id: string,
-    input: { name?: string; type?: 'income' | 'expense'; color?: string },
+    input: { name?: string; type?: "income" | "expense"; color?: string },
   ) => {
-    if (!userId) throw new Error('Not signed in');
+    if (!userId) throw new Error("Not signed in");
 
     const apiInput: UpdateCategoryInputApi = {
       id,
       name: input.name,
       type: input.type
-        ? input.type === 'income'
-          ? 'INCOME'
-          : 'EXPENSE'
+        ? input.type === "income"
+          ? "INCOME"
+          : "EXPENSE"
         : undefined,
       color: input.color,
     };
@@ -159,18 +159,18 @@ export const CategoriesProvider: React.FC<{ children: ReactNode }> = ({
           prev.map((cat) =>
             cat.id === id
               ? {
-                ...cat,
-                name: input.name ?? cat.name,
-                type: input.type ?? cat.type,
-                color: input.color ?? cat.color,
-              }
+                  ...cat,
+                  name: input.name ?? cat.name,
+                  type: input.type ?? cat.type,
+                  color: input.color ?? cat.color,
+                }
               : cat,
           ),
         );
       }
     } catch (e: any) {
-      console.error('Failed to update category', e);
-      setError(e?.message ?? 'Failed to update category');
+      console.error("Failed to update category", e);
+      setError(e?.message ?? "Failed to update category");
       throw e;
     }
   };
@@ -182,7 +182,7 @@ export const CategoriesProvider: React.FC<{ children: ReactNode }> = ({
     const group = CATEGORY_REPO.find((g) => g.id === groupId);
     await addCategory({
       name: item.label,
-      type: item.type === 'income' ? 'income' : 'expense',
+      type: item.type === "income" ? "income" : "expense",
       color: group?.color,
     });
   };

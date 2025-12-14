@@ -1,12 +1,12 @@
-export type TransactionType = 'expense' | 'income';
+export type TransactionType = "expense" | "income";
 
-export type CategoryType = TransactionType | 'both';
+export type CategoryType = TransactionType | "both";
 
 export interface Category {
   id: string;
   userId: string;
   name: string;
-  type: CategoryType;  
+  type: CategoryType;
   color?: string;
   createdAt: string; // ISO
 }
@@ -17,7 +17,7 @@ export interface Transaction {
   type: TransactionType;
   amount: number;
   categoryId: string;
-  date: string;       // 'YYYY-MM-DD' for v1
+  date: string; // 'YYYY-MM-DD' for v1
   note?: string;
   accountId?: string;
   includeInStats: boolean;
@@ -26,7 +26,7 @@ export interface Transaction {
 }
 
 export interface UserProfile {
-  id: string;         // Cognito sub later
+  id: string; // Cognito sub later
   email: string;
   createdAt: string;
 }

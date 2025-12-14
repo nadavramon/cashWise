@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
@@ -7,13 +7,13 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   useColorScheme,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { SafeAreaView } from 'react-native-safe-area-context'; // Import SafeAreaView
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { SafeAreaView } from "react-native-safe-area-context"; // Import SafeAreaView
 
-import { useCategories } from '../../context/CategoriesContext';
-import { CATEGORY_REPO, RepoCategoryItem } from '../../data/categoryRepo';
-import { Category } from '../../types/models';
+import { useCategories } from "../../context/CategoriesContext";
+import { CATEGORY_REPO, RepoCategoryItem } from "../../data/categoryRepo";
+import { Category } from "../../types/models";
 
 const isItemAlreadyAdded = (
   categories: Category[],
@@ -22,33 +22,36 @@ const isItemAlreadyAdded = (
   return categories.some(
     (c) =>
       c.name.toLowerCase() === item.label.toLowerCase() &&
-      (c.type === item.type || c.type === 'both'),
+      (c.type === item.type || c.type === "both"),
   );
 };
 
 const CategoriesScreen: React.FC = () => {
   const navigation = useNavigation();
   const { categories, loading, addCategoryFromRepo } = useCategories();
-  const isDark = useColorScheme() === 'dark';
+  const isDark = useColorScheme() === "dark";
 
   const handleAddManual = () => {
-    navigation.navigate('ManualCategory' as never);
+    navigation.navigate("ManualCategory" as never);
   };
 
-  const handleRepoItemPress = async (groupId: string, item: RepoCategoryItem) => {
+  const handleRepoItemPress = async (
+    groupId: string,
+    item: RepoCategoryItem,
+  ) => {
     try {
       await addCategoryFromRepo(groupId, item);
     } catch (e) {
-      console.warn('Failed to add repo category', e);
+      console.warn("Failed to add repo category", e);
     }
   };
 
   // Dynamic Styles
-  const textColor = isDark ? '#FFFFFF' : '#000000';
-  const subTextColor = isDark ? '#CCCCCC' : '#555555';
-  const buttonBg = isDark ? '#333333' : '#f5f5f5';
-  const buttonBorder = isDark ? '#555555' : '#cccccc';
-  const backButtonColor = isDark ? '#FFFFFF' : '#007AFF';
+  const textColor = isDark ? "#FFFFFF" : "#000000";
+  const subTextColor = isDark ? "#CCCCCC" : "#555555";
+  const buttonBg = isDark ? "#333333" : "#f5f5f5";
+  const buttonBorder = isDark ? "#555555" : "#cccccc";
+  const backButtonColor = isDark ? "#FFFFFF" : "#007AFF";
 
   return (
     // Changed View to SafeAreaView to respect notch/home indicator
@@ -58,24 +61,33 @@ const CategoriesScreen: React.FC = () => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Text style={[styles.backText, { color: backButtonColor }]}>{'<'} Tools</Text>
+          <Text style={[styles.backText, { color: backButtonColor }]}>
+            {"<"} Tools
+          </Text>
         </TouchableOpacity>
         <Text style={[styles.title, { color: textColor }]}>Categories</Text>
       </View>
 
       <View style={styles.manualWrapper}>
         <TouchableOpacity
-          style={[styles.manualButton, { backgroundColor: buttonBg, borderColor: buttonBorder }]}
+          style={[
+            styles.manualButton,
+            { backgroundColor: buttonBg, borderColor: buttonBorder },
+          ]}
           onPress={handleAddManual}
         >
-          <Text style={[styles.manualButtonText, { color: textColor }]}>+ Add category manually</Text>
+          <Text style={[styles.manualButtonText, { color: textColor }]}>
+            + Add category manually
+          </Text>
         </TouchableOpacity>
       </View>
 
       {loading && (
         <View style={styles.loadingRow}>
           <ActivityIndicator color={textColor} />
-          <Text style={[styles.loadingText, { color: subTextColor }]}>Loading categories…</Text>
+          <Text style={[styles.loadingText, { color: subTextColor }]}>
+            Loading categories…
+          </Text>
         </View>
       )}
 
@@ -86,7 +98,9 @@ const CategoriesScreen: React.FC = () => {
               <View
                 style={[styles.groupColorDot, { backgroundColor: group.color }]}
               />
-              <Text style={[styles.groupTitle, { color: textColor }]}>{group.title}</Text>
+              <Text style={[styles.groupTitle, { color: textColor }]}>
+                {group.title}
+              </Text>
             </View>
 
             <View style={styles.itemsRow}>
@@ -101,7 +115,7 @@ const CategoriesScreen: React.FC = () => {
                       { borderColor: group.color },
                       added && [
                         styles.itemChipAdded,
-                        { backgroundColor: group.color + '20' },
+                        { backgroundColor: group.color + "20" },
                       ],
                     ]}
                     onPress={() => handleRepoItemPress(group.id, item)}
@@ -111,11 +125,11 @@ const CategoriesScreen: React.FC = () => {
                       style={[
                         styles.itemLabel,
                         { color: textColor },
-                        added && styles.itemLabelAdded
+                        added && styles.itemLabelAdded,
                       ]}
                     >
                       {item.label}
-                      {added ? ' ✓' : ''}
+                      {added ? " ✓" : ""}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -136,8 +150,8 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 12,
   },
   backButton: {
@@ -150,7 +164,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   manualWrapper: {
     marginBottom: 12,
@@ -163,11 +177,11 @@ const styles = StyleSheet.create({
   },
   manualButtonText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   loadingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
     gap: 8,
   },
@@ -181,8 +195,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   groupHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
   },
   groupColorDot: {
@@ -193,11 +207,11 @@ const styles = StyleSheet.create({
   },
   groupTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   itemsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
   },
   itemChip: {
@@ -212,6 +226,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   itemLabelAdded: {
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

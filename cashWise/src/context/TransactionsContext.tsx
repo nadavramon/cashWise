@@ -4,10 +4,10 @@ import React, {
   useState,
   useEffect,
   ReactNode,
-} from 'react';
-import { Transaction as UiTransaction } from '../types/models';
-import { useAuth } from './AuthContext';
-import { useProfile } from './ProfileContext';
+} from "react";
+import { Transaction as UiTransaction } from "../types/models";
+import { useAuth } from "./AuthContext";
+import { useProfile } from "./ProfileContext";
 import {
   apiCreateTransaction,
   apiListTransactions,
@@ -16,11 +16,11 @@ import {
   CreateTransactionInput as ApiCreateInput,
   TransactionApi as ApiTransaction,
   UpdateTransactionInputApi,
-} from '../api/transactionsApi';
-import { getCycleRangeForDate } from '../utils/billingCycle';
-import { DateRangePresetApi } from '../api/profileApi';
+} from "../api/transactionsApi";
+import { getCycleRangeForDate } from "../utils/billingCycle";
+import { DateRangePresetApi } from "../api/profileApi";
 
-type DateRangePreset = DateRangePresetApi | 'CUSTOM' | 'THIS_WEEK';
+type DateRangePreset = DateRangePresetApi | "CUSTOM" | "THIS_WEEK";
 
 interface DateRange {
   preset: DateRangePreset;
@@ -30,17 +30,20 @@ interface DateRange {
 
 const formatDate = (d: Date): string => {
   const yyyy = d.getFullYear();
-  const mm = `${d.getMonth() + 1}`.padStart(2, '0');
-  const dd = `${d.getDate()}`.padStart(2, '0');
+  const mm = `${d.getMonth() + 1}`.padStart(2, "0");
+  const dd = `${d.getDate()}`.padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
 };
 
 // Helper to bridge the gap between `DateRangePreset` (UI) and billing logic
-const getPresetRange = (preset: DateRangePreset, startDay: number = 1): DateRange => {
+const getPresetRange = (
+  preset: DateRangePreset,
+  startDay: number = 1,
+): DateRange => {
   const now = new Date();
 
   // Handle specific UI-only presets like THIS_WEEK if not covered by utility
-  if (preset === 'THIS_WEEK') {
+  if (preset === "THIS_WEEK") {
     const day = now.getDay();
     const diffToMonday = (day + 6) % 7;
     const monday = new Date(now);
@@ -55,9 +58,9 @@ const getPresetRange = (preset: DateRangePreset, startDay: number = 1): DateRang
     };
   }
 
-  if (preset === 'CUSTOM') {
+  if (preset === "CUSTOM") {
     return {
-      preset: 'CUSTOM',
+      preset: "CUSTOM",
       fromDate: formatDate(now),
       toDate: formatDate(now),
     };
@@ -67,7 +70,7 @@ const getPresetRange = (preset: DateRangePreset, startDay: number = 1): DateRang
   const { start, endExclusive } = getCycleRangeForDate(
     now,
     { startDay },
-    preset as DateRangePresetApi
+    preset as DateRangePresetApi,
   );
 
   // Note: TransactionsContext uses inclusive ranges (user expects 'toDate' to be included potentially?)
@@ -85,7 +88,7 @@ const getPresetRange = (preset: DateRangePreset, startDay: number = 1): DateRang
 };
 
 interface AddTransactionInput {
-  type: 'income' | 'expense';
+  type: "income" | "expense";
   amount: number;
   categoryId: string;
   date: string; // 'YYYY-MM-DD'
@@ -105,7 +108,7 @@ interface TransactionsContextValue {
     id: string,
     originalDate: string,
     patch: {
-      type?: 'income' | 'expense';
+      type?: "income" | "expense";
       amount?: number;
       categoryId?: string;
       note?: string;
@@ -122,7 +125,7 @@ const TransactionsContext = createContext<TransactionsContextValue | undefined>(
 export const useTransactions = (): TransactionsContextValue => {
   const ctx = useContext(TransactionsContext);
   if (!ctx) {
-    throw new Error('useTransactions must be used within TransactionsProvider');
+    throw new Error("useTransactions must be used within TransactionsProvider");
   }
   return ctx;
 };
@@ -131,7 +134,7 @@ function mapApiToUi(tx: ApiTransaction): UiTransaction {
   return {
     id: tx.id,
     userId: tx.userId,
-    type: tx.type === 'INCOME' ? 'income' : 'expense',
+    type: tx.type === "INCOME" ? "income" : "expense",
     amount: tx.amount,
     categoryId: tx.categoryId,
     date: tx.date,
@@ -154,9 +157,9 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
   // Default to CURRENT_CYCLE
   const [dateRange, setDateRangeState] = useState<DateRange>(() => {
     return {
-      preset: 'CURRENT_CYCLE',
+      preset: "CURRENT_CYCLE",
       fromDate: formatDate(new Date()),
-      toDate: formatDate(new Date())
+      toDate: formatDate(new Date()),
     };
   });
 
@@ -184,13 +187,12 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
         const mapped = response.items.map(mapApiToUi);
         allTxs.push(...mapped);
         nextToken = response.nextToken || null;
-
       } while (nextToken);
 
       setTransactions(allTxs);
     } catch (e: any) {
-      console.error('Failed to load transactions', e);
-      setError(e?.message ?? 'Failed to load transactions');
+      console.error("Failed to load transactions", e);
+      setError(e?.message ?? "Failed to load transactions");
     } finally {
       setLoading(false);
     }
@@ -200,11 +202,12 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     if (!profile) return;
 
-    const targetPreset = (profile.overviewDateRangePreset as DateRangePreset) || 'CURRENT_CYCLE';
+    const targetPreset =
+      (profile.overviewDateRangePreset as DateRangePreset) || "CURRENT_CYCLE";
 
     const startDay = profile.billingCycleStartDay || 1;
 
-    setDateRangeState(current => {
+    setDateRangeState((current) => {
       // If the current preset is different from the target AND it's not custom/interactive, maybe update?
       // For now, we force update only if we are still on the initial/default logic or if simple switching is desired.
       // Let's just update based on the profile's preferred preset + startDay logic.
@@ -219,11 +222,11 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
 
   const addTransaction = async (input: AddTransactionInput) => {
     if (!userId) {
-      throw new Error('Not signed in');
+      throw new Error("Not signed in");
     }
 
     const apiInput: ApiCreateInput = {
-      type: input.type === 'income' ? 'INCOME' : 'EXPENSE',
+      type: input.type === "income" ? "INCOME" : "EXPENSE",
       amount: input.amount,
       categoryId: input.categoryId,
       date: input.date,
@@ -237,8 +240,8 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
       const uiTx = mapApiToUi(created);
       setTransactions((prev) => [uiTx, ...prev]);
     } catch (e: any) {
-      console.error('Failed to create transaction', e);
-      setError(e?.message ?? 'Failed to create transaction');
+      console.error("Failed to create transaction", e);
+      setError(e?.message ?? "Failed to create transaction");
       throw e;
     }
   };
@@ -255,7 +258,7 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
 
   const setCustomRange = (fromDate: string, toDate: string) => {
     setDateRangeState({
-      preset: 'CUSTOM',
+      preset: "CUSTOM",
       fromDate,
       toDate,
     });
@@ -265,14 +268,14 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
     id: string,
     originalDate: string,
     patch: {
-      type?: 'income' | 'expense';
+      type?: "income" | "expense";
       amount?: number;
       categoryId?: string;
       note?: string;
       includeInStats?: boolean;
     },
   ) => {
-    if (!userId) throw new Error('Not signed in');
+    if (!userId) throw new Error("Not signed in");
 
     const apiInput: UpdateTransactionInputApi = {
       id,
@@ -280,9 +283,9 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
     };
 
     if (patch.type) {
-      apiInput.type = patch.type === 'income' ? 'INCOME' : 'EXPENSE';
+      apiInput.type = patch.type === "income" ? "INCOME" : "EXPENSE";
     }
-    if (typeof patch.amount === 'number') {
+    if (typeof patch.amount === "number") {
       apiInput.amount = patch.amount;
     }
     if (patch.categoryId) {
@@ -298,7 +301,7 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
     try {
       setError(null);
       const ok = await apiUpdateTransaction(apiInput);
-      if (!ok) throw new Error('Update failed');
+      if (!ok) throw new Error("Update failed");
 
       setTransactions((prev) =>
         prev.map((tx) => {
@@ -316,26 +319,26 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
         }),
       );
     } catch (e: any) {
-      console.error('Failed to update transaction', e);
-      setError(e?.message ?? 'Failed to update transaction');
+      console.error("Failed to update transaction", e);
+      setError(e?.message ?? "Failed to update transaction");
       throw e;
     }
   };
 
   const deleteTransaction = async (id: string, date: string) => {
-    if (!userId) throw new Error('Not signed in');
+    if (!userId) throw new Error("Not signed in");
 
     try {
       setError(null);
       const ok = await apiDeleteTransaction(id, date);
-      if (!ok) throw new Error('Delete failed');
+      if (!ok) throw new Error("Delete failed");
 
       setTransactions((prev) =>
         prev.filter((tx) => !(tx.id === id && tx.date === date)),
       );
     } catch (e: any) {
-      console.error('Failed to delete transaction', e);
-      setError(e?.message ?? 'Failed to delete transaction');
+      console.error("Failed to delete transaction", e);
+      setError(e?.message ?? "Failed to delete transaction");
       throw e;
     }
   };

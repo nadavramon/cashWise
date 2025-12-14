@@ -1,20 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
-import { ActivityIndicator, View, useColorScheme } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import React, { useEffect, useState } from "react";
+import {
+  NavigationContainer,
+  DefaultTheme,
+  DarkTheme,
+} from "@react-navigation/native";
+import { ActivityIndicator, View, useColorScheme } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import BottomTabs from './src/navigation/BottomTabs';
-import AuthStack from './src/navigation/AuthStack';
+import BottomTabs from "./src/navigation/BottomTabs";
+import AuthStack from "./src/navigation/AuthStack";
 
-import { getCurrentUser } from 'aws-amplify/auth';
-import AuthContext from './src/context/AuthContext';
-import { extractUserId, extractUserEmail, extractUsername } from './src/utils/authUser';
-import { TransactionsProvider } from './src/context/TransactionsContext';
-import { CategoriesProvider } from './src/context/CategoriesContext';
-import { ProfileProvider } from './src/context/ProfileContext';
+import { getCurrentUser } from "aws-amplify/auth";
+import AuthContext from "./src/context/AuthContext";
+import {
+  extractUserId,
+  extractUserEmail,
+  extractUsername,
+} from "./src/utils/authUser";
+import { TransactionsProvider } from "./src/context/TransactionsContext";
+import { CategoriesProvider } from "./src/context/CategoriesContext";
+import { ProfileProvider } from "./src/context/ProfileContext";
 
 // Import your wrapper
-import GradientBackground from './src/components/GradientBackground';
+import GradientBackground from "./src/components/GradientBackground";
 
 export default function App() {
   const [user, setUser] = useState<any | null>(null);
@@ -40,10 +48,10 @@ export default function App() {
   // 2. Define a Navigation Theme that is transparent
   // This ensures screens don't have a white/black block covering your gradient
   const TransparentNavTheme = {
-    ...(scheme === 'dark' ? DarkTheme : DefaultTheme),
+    ...(scheme === "dark" ? DarkTheme : DefaultTheme),
     colors: {
-      ...(scheme === 'dark' ? DarkTheme.colors : DefaultTheme.colors),
-      background: 'transparent', // CRITICAL: Lets the gradient show through
+      ...(scheme === "dark" ? DarkTheme.colors : DefaultTheme.colors),
+      background: "transparent", // CRITICAL: Lets the gradient show through
     },
   };
 
@@ -51,8 +59,13 @@ export default function App() {
     // Optional: You can wrap this in GradientBackground too if you want
     return (
       <GradientBackground>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color={scheme === 'dark' ? '#fff' : '#007CBE'} />
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator
+            size="large"
+            color={scheme === "dark" ? "#fff" : "#007CBE"}
+          />
         </View>
       </GradientBackground>
     );
@@ -66,7 +79,9 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       {/* 3. Wrap the whole app in the Gradient */}
       <GradientBackground>
-        <AuthContext.Provider value={{ user, userId, username, email, setUser }}>
+        <AuthContext.Provider
+          value={{ user, userId, username, email, setUser }}
+        >
           <ProfileProvider>
             <CategoriesProvider>
               <TransactionsProvider>

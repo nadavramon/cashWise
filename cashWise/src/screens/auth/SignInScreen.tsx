@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,23 +7,26 @@ import {
   Button,
   Alert,
   TouchableOpacity,
-} from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { signIn, getCurrentUser, resendSignUpCode } from 'aws-amplify/auth';
-import { AuthStackParamList } from '../../navigation/AuthStack';
-import { useAuth } from '../../context/AuthContext';
+} from "react-native";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { signIn, getCurrentUser, resendSignUpCode } from "aws-amplify/auth";
+import { AuthStackParamList } from "../../navigation/AuthStack";
+import { useAuth } from "../../context/AuthContext";
 
-type Props = NativeStackScreenProps<AuthStackParamList, 'SignIn'>;
+type Props = NativeStackScreenProps<AuthStackParamList, "SignIn">;
 
 const SignInScreen: React.FC<Props> = ({ navigation }) => {
   const { setUser } = useAuth();
-  const [usernameOrEmail, setUsernameOrEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [usernameOrEmail, setUsernameOrEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const handleSignIn = async () => {
     if (!usernameOrEmail || !password) {
-      Alert.alert('Missing fields', 'Please enter username/email and password.');
+      Alert.alert(
+        "Missing fields",
+        "Please enter username/email and password.",
+      );
       return;
     }
 
@@ -33,7 +36,7 @@ const SignInScreen: React.FC<Props> = ({ navigation }) => {
         username: usernameOrEmail.trim(),
         password,
         options: {
-          authFlowType: 'USER_PASSWORD_AUTH',
+          authFlowType: "USER_PASSWORD_AUTH",
         },
       });
 
@@ -43,20 +46,22 @@ const SignInScreen: React.FC<Props> = ({ navigation }) => {
       }
       // App.tsx will switch to the main tabs when user is set
     } catch (err: any) {
-      console.error('SignIn error', err);
-      if (err?.name === 'UserNotConfirmedException') {
+      console.error("SignIn error", err);
+      if (err?.name === "UserNotConfirmedException") {
         try {
           await resendSignUpCode({ username: usernameOrEmail.trim() });
         } catch (resendErr) {
-          console.error('Resend code error', resendErr);
+          console.error("Resend code error", resendErr);
         }
         Alert.alert(
-          'Confirm your account',
-          'Enter the confirmation code we emailed you.',
+          "Confirm your account",
+          "Enter the confirmation code we emailed you.",
         );
-        navigation.navigate('ConfirmSignUp', { username: usernameOrEmail.trim() });
+        navigation.navigate("ConfirmSignUp", {
+          username: usernameOrEmail.trim(),
+        });
       } else {
-        Alert.alert('Sign in failed', err.message || 'Check your credentials.');
+        Alert.alert("Sign in failed", err.message || "Check your credentials.");
       }
     } finally {
       setSubmitting(false);
@@ -87,7 +92,7 @@ const SignInScreen: React.FC<Props> = ({ navigation }) => {
 
       <View style={{ marginTop: 16 }}>
         <Button
-          title={submitting ? 'Signing in...' : 'Sign In'}
+          title={submitting ? "Signing in..." : "Sign In"}
           onPress={handleSignIn}
           disabled={submitting}
         />
@@ -95,11 +100,9 @@ const SignInScreen: React.FC<Props> = ({ navigation }) => {
 
       <TouchableOpacity
         style={{ marginTop: 16 }}
-        onPress={() => navigation.navigate('SignUp')}
+        onPress={() => navigation.navigate("SignUp")}
       >
-        <Text style={styles.link}>
-          Don&apos;t have an account? Sign Up
-        </Text>
+        <Text style={styles.link}>Don&apos;t have an account? Sign Up</Text>
       </TouchableOpacity>
     </View>
   );
@@ -111,17 +114,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
-    textAlign: 'center',
+    fontWeight: "700",
+    textAlign: "center",
     marginBottom: 24,
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     marginTop: 12,
     marginBottom: 4,
   },
@@ -132,7 +135,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   link: {
-    color: '#0066cc',
-    textAlign: 'center',
+    color: "#0066cc",
+    textAlign: "center",
   },
 });

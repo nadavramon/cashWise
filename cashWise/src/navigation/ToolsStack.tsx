@@ -1,9 +1,12 @@
-import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import ToolsScreenMain from '../screens/main/ToolsScreenMain';
-import ProfileScreen from '../screens/main/ProfileScreen';
-import CategoriesScreen from '../screens/main/CategoriesScreen';
-import ManualCategoryScreen from '../screens/main/ManualCategoryScreen';
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import ToolsScreenMain from "../screens/main/ToolsScreenMain";
+import ProfileScreen from "../screens/main/ProfileScreen";
+import CategoriesScreen from "../screens/main/CategoriesScreen";
+import ManualCategoryScreen from "../screens/main/ManualCategoryScreen";
+
+import { t } from "../config/i18n";
+import { useProfile } from "../context/ProfileContext";
 
 export type ToolsStackParamList = {
   ToolsHome: undefined;
@@ -14,12 +17,9 @@ export type ToolsStackParamList = {
 
 const Stack = createNativeStackNavigator<ToolsStackParamList>();
 
-import { t } from '../config/i18n';
-import { useProfile } from '../context/ProfileContext';
-
 const ToolsStack: React.FC = () => {
   const { profile } = useProfile();
-  const language = profile?.language || 'en';
+  const language = profile?.language || "en";
 
   return (
     <Stack.Navigator>
@@ -31,7 +31,7 @@ const ToolsStack: React.FC = () => {
       <Stack.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{ headerBackTitle: '' }}
+        options={{ headerBackTitle: "" }}
       />
       <Stack.Screen
         name="Categories"
@@ -41,7 +41,7 @@ const ToolsStack: React.FC = () => {
       <Stack.Screen
         name="ManualCategory"
         component={ManualCategoryScreen}
-        options={{ title: t('toolsManualCategory', language) }}
+        options={{ title: t("toolsManualCategory", language) }}
       />
     </Stack.Navigator>
   );

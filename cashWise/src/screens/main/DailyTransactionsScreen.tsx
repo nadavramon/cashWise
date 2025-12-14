@@ -1,5 +1,5 @@
 // src/screens/DailyTransactionsScreen.tsx
-import React, { useMemo } from 'react';
+import React, { useMemo } from "react";
 import {
   View,
   Text,
@@ -8,53 +8,61 @@ import {
   TouchableOpacity,
   Modal,
   useColorScheme,
-} from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RouteProp } from '@react-navigation/native';
+} from "react-native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { RouteProp } from "@react-navigation/native";
 
-import type { OverviewStackParamList } from '../../navigation/OverviewStack';
-import { useTransactions } from '../../context/TransactionsContext';
-import { useCategories } from '../../context/CategoriesContext';
-import { useProfile } from '../../context/ProfileContext';
-import TransactionForm from '../../components/features/transactions/TransactionForm';
-import type { Transaction } from '../../types/models';
-import { t } from '../../config/i18n';
+import type { OverviewStackParamList } from "../../navigation/OverviewStack";
+import { useTransactions } from "../../context/TransactionsContext";
+import { useCategories } from "../../context/CategoriesContext";
+import { useProfile } from "../../context/ProfileContext";
+import TransactionForm from "../../components/features/transactions/TransactionForm";
+import type { Transaction } from "../../types/models";
+import { t } from "../../config/i18n";
 
-type DailyRoute = RouteProp<OverviewStackParamList, 'DailyTransactions'>;
+type DailyRoute = RouteProp<OverviewStackParamList, "DailyTransactions">;
 
 const DailyTransactionsScreen: React.FC = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<OverviewStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<OverviewStackParamList>>();
   const route = useRoute<DailyRoute>();
   const { date } = route.params;
-  const isDarkMode = useColorScheme() === 'dark';
-  const themeColor = isDarkMode ? '#02C3BD' : '#007CBE';
+  const isDarkMode = useColorScheme() === "dark";
+  const themeColor = isDarkMode ? "#02C3BD" : "#007CBE";
 
   const [showAddModal, setShowAddModal] = React.useState(false);
 
   const { transactions } = useTransactions();
   const { categories } = useCategories();
   const { profile } = useProfile();
-  const language = profile?.language || 'en';
+  const language = profile?.language || "en";
 
   // Dynamic Title
   React.useLayoutEffect(() => {
     const dateObj = new Date(date);
-    const locale = language === 'he' ? 'he-IL' : 'en-US';
-    const dayName = dateObj.toLocaleDateString(locale, { weekday: 'long' });
+    const locale = language === "he" ? "he-IL" : "en-US";
+    const dayName = dateObj.toLocaleDateString(locale, { weekday: "long" });
     const dayNum = dateObj.getDate();
-    const monthName = dateObj.toLocaleDateString(locale, { month: 'short' }).toUpperCase();
+    const monthName = dateObj
+      .toLocaleDateString(locale, { month: "short" })
+      .toUpperCase();
 
     navigation.setOptions({
-      title: '',
+      title: "",
       headerShadowVisible: false,
       headerStyle: {
-        backgroundColor: isDarkMode ? '#000' : '#f2f2f7',
+        backgroundColor: isDarkMode ? "#000" : "#f2f2f7",
       },
       headerTintColor: themeColor,
       headerRight: () => (
-        <TouchableOpacity onPress={() => setShowAddModal(true)} style={{ padding: 4 }}>
-          <Text style={{ fontSize: 24, color: themeColor, fontWeight: '400' }}>+</Text>
+        <TouchableOpacity
+          onPress={() => setShowAddModal(true)}
+          style={{ padding: 4 }}
+        >
+          <Text style={{ fontSize: 24, color: themeColor, fontWeight: "400" }}>
+            +
+          </Text>
         </TouchableOpacity>
       ),
     });
@@ -76,18 +84,16 @@ const DailyTransactionsScreen: React.FC = () => {
   const totalAmount = useMemo(() => {
     return dayTransactions.reduce((acc, t) => {
       if (!t.includeInStats) return acc;
-      return acc + (t.type === 'income' ? t.amount : -t.amount);
+      return acc + (t.type === "income" ? t.amount : -t.amount);
     }, 0);
   }, [dayTransactions]);
 
-  const currency = profile?.currency || '₪';
-  const formattedTotal = `${totalAmount >= 0 ? '' : '-'}${Math.abs(totalAmount).toFixed(2)} ${currency}`;
-
-
-
+  const currency = profile?.currency || "₪";
+  const formattedTotal = `${totalAmount >= 0 ? "" : "-"}${Math.abs(totalAmount).toFixed(2)} ${currency}`;
 
   const renderItem = ({ item }: { item: Transaction }) => {
-    const catName = categoryNameById[item.categoryId] ?? t('uncategorized', language);
+    const catName =
+      categoryNameById[item.categoryId] ?? t("uncategorized", language);
 
     return (
       <View style={styles.row}>
@@ -99,13 +105,17 @@ const DailyTransactionsScreen: React.FC = () => {
           <Text
             style={[
               styles.rowAmount,
-              item.type === 'income' ? styles.incomeText : styles.expenseText,
+              item.type === "income" ? styles.incomeText : styles.expenseText,
             ]}
           >
-            {item.type === 'income' ? '+' : '-'}
+            {item.type === "income" ? "+" : "-"}
             {item.amount.toFixed(2)}
           </Text>
-          <Text style={styles.rowType}>{item.type === 'income' ? t('income', language) : t('expense', language)}</Text>
+          <Text style={styles.rowType}>
+            {item.type === "income"
+              ? t("income", language)
+              : t("expense", language)}
+          </Text>
         </View>
       </View>
     );
@@ -115,19 +125,28 @@ const DailyTransactionsScreen: React.FC = () => {
     <View style={styles.container}>
       {/* Header area in Body */}
       <View style={styles.header}>
-        <Text style={[styles.dateTitle, { color: isDarkMode ? '#fff' : '#000' }]}>
-          {new Date(date).toLocaleDateString(language === 'he' ? 'he-IL' : 'en-US', { weekday: 'long' })}, {new Date(date).getDate()} {new Date(date).toLocaleDateString(language === 'he' ? 'he-IL' : 'en-US', { month: 'short' }).toUpperCase()}
+        <Text
+          style={[styles.dateTitle, { color: isDarkMode ? "#fff" : "#000" }]}
+        >
+          {new Date(date).toLocaleDateString(
+            language === "he" ? "he-IL" : "en-US",
+            { weekday: "long" },
+          )}
+          , {new Date(date).getDate()}{" "}
+          {new Date(date)
+            .toLocaleDateString(language === "he" ? "he-IL" : "en-US", {
+              month: "short",
+            })
+            .toUpperCase()}
         </Text>
-        <Text style={[
-          styles.totalAmount,
-          { color: isDarkMode ? '#fff' : '#000' }
-        ]}>
+        <Text
+          style={[styles.totalAmount, { color: isDarkMode ? "#fff" : "#000" }]}
+        >
           {formattedTotal}
         </Text>
       </View>
 
       {/* Totals card */}
-
 
       {/* List of transactions */}
       <FlatList
@@ -137,8 +156,6 @@ const DailyTransactionsScreen: React.FC = () => {
         contentContainerStyle={styles.listContent}
       />
 
-
-
       {/* Add Transaction Modal */}
       <Modal
         visible={showAddModal}
@@ -146,7 +163,12 @@ const DailyTransactionsScreen: React.FC = () => {
         onRequestClose={() => setShowAddModal(false)}
         presentationStyle="pageSheet"
       >
-        <View style={{ flex: 1, backgroundColor: isDarkMode ? '#1a1a1a' : '#f2f2f7' }}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: isDarkMode ? "#1a1a1a" : "#f2f2f7",
+          }}
+        >
           <TransactionForm
             onSuccess={() => setShowAddModal(false)}
             onCancel={() => setShowAddModal(false)}
@@ -167,54 +189,54 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 24,
-    alignItems: 'center',
+    alignItems: "center",
     paddingTop: 16,
   },
   totalAmount: {
     fontSize: 36,
-    fontWeight: '700',
+    fontWeight: "700",
   },
 
   incomeText: {
-    color: '#2ecc71',
+    color: "#2ecc71",
   },
   expenseText: {
-    color: '#e74c3c',
+    color: "#e74c3c",
   },
   listContent: {
     paddingBottom: 16,
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingVertical: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
   rowMain: {
     flex: 1,
   },
   rowCategory: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   rowNote: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
   },
   rowRight: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   rowAmount: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   rowType: {
     fontSize: 11,
-    color: '#999',
+    color: "#999",
   },
   dateTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 8,
     opacity: 0.8,
   },

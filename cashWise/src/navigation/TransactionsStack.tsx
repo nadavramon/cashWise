@@ -1,10 +1,10 @@
-import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import TransactionsScreen from '../screens/main/TransactionsScreen';
-import AddTransactionScreen from '../screens/main/AddTransactionScreen';
-import EditTransactionScreen from '../screens/main/EditTransactionScreen';
-import { t } from '../config/i18n';
-import { useProfile } from '../context/ProfileContext';
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import TransactionsScreen from "../screens/main/TransactionsScreen";
+import AddTransactionScreen from "../screens/main/AddTransactionScreen";
+import EditTransactionScreen from "../screens/main/EditTransactionScreen";
+import { t } from "../config/i18n";
+import { useProfile } from "../context/ProfileContext";
 
 export type TransactionsStackParamList = {
   TransactionsList: undefined;
@@ -28,12 +28,12 @@ const TransactionsStack: React.FC = () => {
       <Stack.Screen
         name="EditTransaction"
         component={EditTransactionScreen}
-        options={{ title: 'Edit Transaction' }}
+        options={{ title: "Edit Transaction" }}
       />
       <Stack.Screen
         name="AddTransaction"
         component={AddTransactionScreen}
-        options={{ title: 'New Transaction', presentation: 'modal' }}
+        options={{ title: "New Transaction", presentation: "modal" }}
       />
     </Stack.Navigator>
   );

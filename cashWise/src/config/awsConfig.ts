@@ -1,5 +1,5 @@
 // cashWise/src/awsConfig.ts
-import type { ResourcesConfig } from 'aws-amplify';
+import type { ResourcesConfig } from "aws-amplify";
 
 const awsConfig: ResourcesConfig = {
   Auth: {
@@ -16,7 +16,7 @@ const awsConfig: ResourcesConfig = {
     GraphQL: {
       endpoint: process.env.EXPO_PUBLIC_GRAPHQL_ENDPOINT!,
       region: process.env.EXPO_PUBLIC_AWS_REGION!,
-      defaultAuthMode: 'userPool', // because AppSync uses your Cognito user pool
+      defaultAuthMode: "userPool", // because AppSync uses your Cognito user pool
     },
   },
 };

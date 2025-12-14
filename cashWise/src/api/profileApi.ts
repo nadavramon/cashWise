@@ -1,13 +1,13 @@
 // src/api/profileApi.ts
-import { graphqlClient } from './graphqlClient';
-import { GET_USER_PROFILE, UPDATE_USER_PROFILE } from './operations';
+import { graphqlClient } from "./graphqlClient";
+import { GET_USER_PROFILE, UPDATE_USER_PROFILE } from "./operations";
 
 export type DateRangePresetApi =
-  | 'CURRENT_CYCLE'
-  | 'LAST_CYCLE'
-  | 'THIS_MONTH'
-  | 'LAST_MONTH'
-  | 'YEAR_TO_DATE';
+  | "CURRENT_CYCLE"
+  | "LAST_CYCLE"
+  | "THIS_MONTH"
+  | "LAST_MONTH"
+  | "YEAR_TO_DATE";
 
 export interface UserProfileApi {
   userId: string;
@@ -51,7 +51,7 @@ export async function apiGetUserProfile(): Promise<UserProfileApi | null> {
     query: GET_USER_PROFILE,
   });
 
-  if ('data' in result) {
+  if ("data" in result) {
     return result.data?.getUserProfile ?? null;
   }
 
@@ -66,9 +66,9 @@ export async function apiUpdateUserProfile(
     variables: { input },
   });
 
-  if ('data' in result && result.data?.updateUserProfile) {
+  if ("data" in result && result.data?.updateUserProfile) {
     return result.data.updateUserProfile;
   }
 
-  throw new Error('Failed to update profile');
+  throw new Error("Failed to update profile");
 }
