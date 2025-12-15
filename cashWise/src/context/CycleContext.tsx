@@ -8,8 +8,8 @@ import React, {
 } from "react";
 import { useProfile } from "./ProfileContext";
 import {
-  TransactionApi as ApiTransaction,
   apiListTransactions,
+  Transaction as ApiTransaction,
 } from "../api/transactionsApi";
 import { Transaction } from "../types/models";
 import { DateRangePresetApi } from "../api/profileApi";
@@ -52,12 +52,10 @@ export const useOverviewCycle = () => {
 const mapApiToModel = (apiTx: ApiTransaction): Transaction => ({
   id: apiTx.id,
   userId: apiTx.userId,
-  // Map Type
-  type: apiTx.type === "INCOME" ? "income" : "expense",
+  type: apiTx.type, // Already mapped
   amount: apiTx.amount,
   categoryId: apiTx.categoryId,
   date: apiTx.date,
-  // Map nulls to undefined
   note: apiTx.note ?? undefined,
   includeInStats: apiTx.includeInStats,
   createdAt: apiTx.createdAt,

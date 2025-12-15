@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import {
   apiListTransactions,
-  TransactionApi,
+  Transaction,
   ListTransactionsInputApi,
+  TransactionApi,
 } from "../api/transactionsApi";
 
 interface UsePaginatedTransactionsParams {
@@ -16,7 +17,7 @@ export function usePaginatedTransactions({
   toDate,
   pageSize = 50,
 }: UsePaginatedTransactionsParams) {
-  const [items, setItems] = useState<TransactionApi[]>([]);
+  const [items, setItems] = useState<Transaction[]>([]);
   const [nextToken, setNextToken] = useState<string | null>(null);
   const [loadingInitial, setLoadingInitial] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);

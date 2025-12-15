@@ -130,11 +130,13 @@ export const useTransactions = (): TransactionsContextValue => {
   return ctx;
 };
 
-function mapApiToUi(tx: ApiTransaction): UiTransaction {
+function mapApiToUi(tx: ApiTransaction | any): UiTransaction {
+  // tx is now the Refactored Transaction interface from API which uses App types
+  // But we might need to handle null vs undefined for strictness
   return {
     id: tx.id,
     userId: tx.userId,
-    type: tx.type === "INCOME" ? "income" : "expense",
+    type: tx.type, // Already 'income' | 'expense'
     amount: tx.amount,
     categoryId: tx.categoryId,
     date: tx.date,
@@ -226,7 +228,7 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
     }
 
     const apiInput: ApiCreateInput = {
-      type: input.type === "income" ? "INCOME" : "EXPENSE",
+      type: input.type,
       amount: input.amount,
       categoryId: input.categoryId,
       date: input.date,
@@ -283,7 +285,7 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
     };
 
     if (patch.type) {
-      apiInput.type = patch.type === "income" ? "INCOME" : "EXPENSE";
+      apiInput.type = patch.type;
     }
     if (typeof patch.amount === "number") {
       apiInput.amount = patch.amount;

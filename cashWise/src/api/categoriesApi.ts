@@ -7,35 +7,53 @@ import {
   UPDATE_CATEGORY,
 } from "./operations";
 
-export type CategoryTypeApi = "INCOME" | "EXPENSE";
+import type { CategoryType as AppCatType } from "../types/models";
+import { fromGqlCatType, toGqlCatType } from "./mappers";
+import type { CategoryType as GqlCatType } from "./graphqlTypes";
+
+export type { AppCatType as CategoryTypeApi };
 
 export interface CategoryApi {
   id: string;
   userId: string;
   name: string;
-  type: CategoryTypeApi;
+  type: AppCatType;
   color?: string | null;
   createdAt: string;
 }
 
 export interface CreateCategoryInputApi {
   name: string;
-  type: CategoryTypeApi;
+  type: AppCatType;
   color?: string | null;
 }
 
 export interface UpdateCategoryInputApi {
   id: string;
   name?: string;
-  type?: CategoryTypeApi;
+  type?: AppCatType;
   color?: string | null;
 }
 interface CreateCategoryResponse {
-  createCategory: CategoryApi;
+  createCategory: {
+    id: string;
+    userId: string;
+    name: string;
+    type: GqlCatType;
+    color?: string | null;
+    createdAt: string;
+  };
 }
 
 interface ListCategoriesResponse {
-  listCategories: CategoryApi[];
+  listCategories: {
+    id: string;
+    userId: string;
+    name: string;
+    type: GqlCatType;
+    color?: string | null;
+    createdAt: string;
+  }[];
 }
 
 interface DeleteCategoryResponse {
@@ -51,14 +69,23 @@ export async function apiCreateCategory(
 ): Promise<CategoryApi> {
   const result = await graphqlClient.graphql<CreateCategoryResponse>({
     query: CREATE_CATEGORY,
-    variables: { input },
+    variables: {
+      input: {
+        ...input,
+        type: toGqlCatType(input.type),
+      },
+    },
   });
 
   if (!("data" in result) || !result.data?.createCategory) {
     throw new Error("createCategory returned no data");
   }
 
-  return result.data.createCategory;
+  const raw = result.data.createCategory;
+  return {
+    ...raw,
+    type: fromGqlCatType(raw.type),
+  };
 }
 
 export async function apiListCategories(): Promise<CategoryApi[]> {
@@ -70,7 +97,10 @@ export async function apiListCategories(): Promise<CategoryApi[]> {
     throw new Error("listCategories returned no data");
   }
 
-  return result.data.listCategories;
+  return result.data.listCategories.map((cat: any) => ({
+    ...cat,
+    type: fromGqlCatType(cat.type),
+  }));
 }
 
 export async function apiDeleteCategory(id: string): Promise<boolean> {
@@ -91,7 +121,12 @@ export async function apiUpdateCategory(
 ): Promise<boolean> {
   const result = await graphqlClient.graphql<UpdateCategoryResponse>({
     query: UPDATE_CATEGORY,
-    variables: { input },
+    variables: {
+      input: {
+        ...input,
+        type: input.type ? toGqlCatType(input.type) : undefined,
+      },
+    },
   });
 
   if (!("data" in result) || typeof result.data?.updateCategory !== "boolean") {

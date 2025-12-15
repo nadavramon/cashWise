@@ -7,10 +7,14 @@ import {
   DELETE_TRANSACTION,
 } from "./operations";
 
-export type TransactionType = "INCOME" | "EXPENSE";
+import type { TransactionType as AppTxType } from "../types/models";
+import { fromGqlTxType, toGqlTxType } from "./mappers";
+import type { TransactionType as GqlTxType } from "./graphqlTypes";
+
+export type { AppTxType as TransactionType };
 
 export interface CreateTransactionInput {
-  type: TransactionType;
+  type: AppTxType;
   amount: number;
   categoryId: string;
   date: string; // 'YYYY-MM-DD'
@@ -21,7 +25,7 @@ export interface CreateTransactionInput {
 export interface UpdateTransactionInputApi {
   id: string;
   date: string; // 'YYYY-MM-DD' original date
-  type?: TransactionType;
+  type?: AppTxType;
   amount?: number;
   categoryId?: string;
   note?: string | null;
@@ -31,7 +35,7 @@ export interface UpdateTransactionInputApi {
 export interface Transaction {
   id: string;
   userId: string;
-  type: TransactionType;
+  type: AppTxType;
   amount: number;
   categoryId: string;
   date: string;
@@ -46,7 +50,12 @@ export async function apiUpdateTransaction(
 ): Promise<boolean> {
   const result = await graphqlClient.graphql({
     query: UPDATE_TRANSACTION,
-    variables: { input },
+    variables: {
+      input: {
+        ...input,
+        type: input.type ? toGqlTxType(input.type) : undefined,
+      },
+    },
   });
 
   if (
@@ -83,12 +92,21 @@ export async function apiCreateTransaction(
 ): Promise<Transaction> {
   const result = await graphqlClient.graphql({
     query: CREATE_TRANSACTION,
-    variables: { input },
+    variables: {
+      input: {
+        ...input,
+        type: toGqlTxType(input.type),
+      },
+    },
     authMode: "userPool",
   });
 
   if ("data" in result && result.data?.createTransaction) {
-    return result.data.createTransaction as Transaction;
+    const raw = result.data.createTransaction;
+    return {
+      ...raw,
+      type: fromGqlTxType(raw.type as GqlTxType),
+    } as Transaction;
   }
 
   throw new Error("CreateTransaction returned no data");
@@ -97,7 +115,7 @@ export async function apiCreateTransaction(
 export interface TransactionApi {
   id: string;
   userId: string;
-  type: "INCOME" | "EXPENSE";
+  type: GqlTxType;
   amount: number;
   categoryId: string;
   date: string; // AWSDate: 'YYYY-MM-DD'
@@ -115,12 +133,15 @@ export interface ListTransactionsInputApi {
 }
 
 export interface TransactionConnectionApi {
-  items: TransactionApi[];
+  items: Transaction[];
   nextToken?: string | null;
 }
 
 interface ListTransactionsResponse {
-  listTransactions: TransactionConnectionApi;
+  listTransactions: {
+    items: TransactionApi[];
+    nextToken?: string | null;
+  };
 }
 
 export async function apiListTransactions(
@@ -133,5 +154,12 @@ export async function apiListTransactions(
     authMode: "userPool",
   })) as { data: ListTransactionsResponse };
 
-  return result.data?.listTransactions ?? { items: [], nextToken: null };
+  const data = result.data?.listTransactions ?? { items: [], nextToken: null };
+  return {
+    items: data.items.map((item) => ({
+      ...item,
+      type: fromGqlTxType(item.type),
+    })),
+    nextToken: data.nextToken,
+  };
 }

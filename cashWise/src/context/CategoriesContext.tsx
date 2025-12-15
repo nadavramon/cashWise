@@ -5,7 +5,7 @@ import React, {
   useState,
   ReactNode,
 } from "react";
-import { Category } from "../types/models";
+import { Category, CategoryType } from "../types/models";
 import {
   apiCreateCategory,
   apiDeleteCategory,
@@ -20,7 +20,7 @@ import { CATEGORY_REPO, RepoCategoryItem } from "../data/categoryRepo";
 
 interface AddCategoryInput {
   name: string;
-  type: "income" | "expense";
+  type: CategoryType;
   color?: string;
 }
 
@@ -58,7 +58,7 @@ function mapApiToUi(cat: CategoryApi): Category {
     id: cat.id,
     userId: cat.userId,
     name: cat.name,
-    type: cat.type === "INCOME" ? "income" : "expense",
+    type: cat.type, // Already App type
     color: cat.color ?? undefined,
     createdAt: cat.createdAt,
   };
@@ -102,7 +102,7 @@ export const CategoriesProvider: React.FC<{ children: ReactNode }> = ({
 
     const apiInput: CreateCategoryInputApi = {
       name: input.name,
-      type: input.type === "income" ? "INCOME" : "EXPENSE",
+      type: input.type,
       color: input.color,
     };
 
@@ -136,18 +136,14 @@ export const CategoriesProvider: React.FC<{ children: ReactNode }> = ({
 
   const updateCategory = async (
     id: string,
-    input: { name?: string; type?: "income" | "expense"; color?: string },
+    input: { name?: string; type?: CategoryType; color?: string },
   ) => {
     if (!userId) throw new Error("Not signed in");
 
     const apiInput: UpdateCategoryInputApi = {
       id,
       name: input.name,
-      type: input.type
-        ? input.type === "income"
-          ? "INCOME"
-          : "EXPENSE"
-        : undefined,
+      type: input.type,
       color: input.color,
     };
 
@@ -182,7 +178,7 @@ export const CategoriesProvider: React.FC<{ children: ReactNode }> = ({
     const group = CATEGORY_REPO.find((g) => g.id === groupId);
     await addCategory({
       name: item.label,
-      type: item.type === "income" ? "income" : "expense",
+      type: item.type,
       color: group?.color,
     });
   };
