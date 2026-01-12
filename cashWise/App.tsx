@@ -21,12 +21,13 @@ import { TransactionsProvider } from "./src/context/TransactionsContext";
 import { CategoriesProvider } from "./src/context/CategoriesContext";
 import { ProfileProvider } from "./src/context/ProfileContext";
 import { BudgetProvider } from "./src/context/BudgetContext";
+import { AmplifyUser } from "./src/types/models";
 
 // Import your wrapper
 import GradientBackground from "./src/components/GradientBackground";
 
 export default function App() {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<AmplifyUser | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   // 1. Get the current scheme to sync Navigation text colors with your Gradient

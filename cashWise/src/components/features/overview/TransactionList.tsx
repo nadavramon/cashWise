@@ -121,6 +121,7 @@ const TransactionList: React.FC<TransactionListProps> = () => {
     refreshing,
     loadMore,
     refresh,
+    error,
   } = usePaginatedTransactions({
     fromDate: start,
     toDate: endExclusive,
@@ -151,6 +152,25 @@ const TransactionList: React.FC<TransactionListProps> = () => {
     );
   }
 
+  if (error && items.length === 0) {
+    return (
+      <View style={{ padding: 40, alignItems: "center" }}>
+        <Text style={{ color: "#FF3B30", marginBottom: 10 }}>{error}</Text>
+        <TouchableOpacity
+          onPress={refresh}
+          style={{
+            paddingHorizontal: 20,
+            paddingVertical: 10,
+            backgroundColor: "#007AFF",
+            borderRadius: 20,
+          }}
+        >
+          <Text style={{ color: "#FFF" }}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <FlatList
       data={items}
@@ -167,6 +187,13 @@ const TransactionList: React.FC<TransactionListProps> = () => {
         loadingMore ? (
           <View style={{ padding: 20, alignItems: "center" }}>
             <ActivityIndicator size="small" />
+          </View>
+        ) : error ? (
+          <View style={{ padding: 20, alignItems: "center" }}>
+            <Text style={{ color: "#FF3B30", marginBottom: 10 }}>{error}</Text>
+            <TouchableOpacity onPress={() => loadMore()}>
+              <Text style={{ color: "#007AFF" }}>Retry</Text>
+            </TouchableOpacity>
           </View>
         ) : null
       }

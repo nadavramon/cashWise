@@ -7,6 +7,7 @@ import {
   Button,
   Alert,
   Linking,
+  ActivityIndicator,
 } from "react-native";
 import { useCategories } from "../../context/CategoriesContext";
 import { useTransactions } from "../../context/TransactionsContext";
@@ -24,8 +25,15 @@ type Props = NativeStackScreenProps<
 >;
 
 const TransactionsScreen: React.FC<Props> = ({ navigation }) => {
-  const { transactions, deleteTransaction, dateRange, setPresetRange } =
-    useTransactions();
+  const {
+    transactions,
+    deleteTransaction,
+    dateRange,
+    setPresetRange,
+    loadMore,
+    hasNextPage,
+    loadingMore,
+  } = useTransactions();
   const { categories } = useCategories();
   const { profile } = useProfile();
   const language = profile?.language || "en";
@@ -162,6 +170,17 @@ const TransactionsScreen: React.FC<Props> = ({ navigation }) => {
               </View>
             );
           }}
+          onEndReached={() => {
+            if (hasNextPage) loadMore();
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            loadingMore ? (
+              <View style={{ padding: 20 }}>
+                <ActivityIndicator size="small" />
+              </View>
+            ) : null
+          }
         />
       </View>
     </SafeAreaView>

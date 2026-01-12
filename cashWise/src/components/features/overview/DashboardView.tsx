@@ -47,7 +47,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   const { width } = Dimensions.get("window");
 
   // --- Context & Data Derivation ---
-  const { transactions, start, endExclusive } = useOverviewCycle();
+  const { transactions, start, endExclusive, error, refreshTransactions } =
+    useOverviewCycle();
   const { profile } = useProfile();
   const { budget, draft } = useBudget();
   const currencySymbol = getCurrencySymbol(profile?.currency);
@@ -251,6 +252,34 @@ const DashboardView: React.FC<DashboardViewProps> = ({
     },
   }), [chartHeight, isDarkMode, themeColor]);
 
+  if (error) {
+    return (
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: cardBg,
+            borderColor: cardBorder,
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: 200,
+          },
+        ]}
+      >
+        <Text style={[styles.errorText, { color: textColor }]}>
+          Failed to load data
+        </Text>
+        <Text style={[styles.errorSubText, { color: subTextColor }]}>{error}</Text>
+        <TouchableOpacity
+          style={[styles.retryButton, { backgroundColor: themeColor }]}
+          onPress={() => refreshTransactions()}
+        >
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
       {/* Sparkline Card */}
@@ -398,10 +427,10 @@ const DashboardView: React.FC<DashboardViewProps> = ({
             </Text>
           </View>
         </View>
-      </View>
+      </View >
 
       {/* Calendar Card */}
-      <View style={[dynamicCardStyle, styles.calendarCard]}>
+      < View style={[dynamicCardStyle, styles.calendarCard]} >
         <Text style={[styles.cardTitle, { color: textColor }]}>Calendar</Text>
         <View
           style={styles.calendarContent}
@@ -490,8 +519,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
             })}
           </View>
         </View>
-      </View>
-    </ScrollView>
+      </View >
+    </ScrollView >
   );
 };
 
@@ -670,6 +699,25 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     position: "absolute",
     bottom: 6,
+  },
+  errorText: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+  errorSubText: {
+    fontSize: 14,
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  retryButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  retryButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
   },
 });
 

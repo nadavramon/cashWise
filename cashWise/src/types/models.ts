@@ -1,3 +1,7 @@
+import { AuthUser } from "aws-amplify/auth";
+
+export type AmplifyUser = AuthUser;
+
 export type TransactionType = "expense" | "income";
 
 export type CategoryType = TransactionType | "both";
@@ -18,11 +22,11 @@ export interface Transaction {
   amount: number;
   categoryId: string;
   date: string; // 'YYYY-MM-DD' for v1
-  note?: string;
+  note?: string | null;
   accountId?: string;
   includeInStats: boolean;
   createdAt: string;
-  updatedAt?: string;
+  updatedAt?: string | null;
 }
 
 export interface UserProfile {

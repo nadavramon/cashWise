@@ -8,10 +8,14 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import GradientBackground from "../../components/GradientBackground";
-import { useTransactions } from "../../context/TransactionsContext";
 import { useProfile } from "../../context/ProfileContext";
 import { useBudget } from "../../context/BudgetContext";
 import { getCurrencySymbol } from "../../utils/currency";
+import { apiListTransactions } from "../../api/transactionsApi";
+import { fromGqlTxType } from "../../api/mappers"; // Wait, apiListTransactions maps it already? Check.
+// apiListTransactions uses fromGqlTxType internally.
+// But check import of apiListTransactions.
+import { Transaction } from "../../types/models";
 import {
   RepoCategoryGroup,
   RepoCategoryItem,
@@ -30,7 +34,8 @@ import OverviewHeader from "../../components/features/overview/OverviewHeader";
 
 const BudgetScreen: React.FC = () => {
   const isDark = useColorScheme() === "dark";
-  const { transactions } = useTransactions();
+  // Removed global transactions
+  // const { transactions } = useTransactions();
   const { profile } = useProfile();
   const currencySymbol = getCurrencySymbol(profile?.currency);
   const language = profile?.language || "en";
@@ -90,16 +95,47 @@ const BudgetScreen: React.FC = () => {
   const themeColor = isDark ? "#02C3BD" : "#007CBE";
 
   // --- Data Calculations ---
-  const { totalIncome } = useMemo(() => {
-    let income = 0;
-    transactions.forEach((tx) => {
-      if (!tx.includeInStats) return;
-      if (tx.type === "income") {
-        income += tx.amount;
+  // --- Data Calculations ---
+  // Fetch actuals for Budget vs Actuals
+  const [totalIncome, setTotalIncome] = useState(0);
+
+  React.useEffect(() => {
+    let mounted = true;
+    if (!cycleStartDate || !cycleEndExclusive) return;
+
+    const fetchStats = async () => {
+      try {
+        const allTxs: Transaction[] = [];
+        let nextToken: string | null = null;
+        do {
+          const res = await apiListTransactions({
+            fromDate: cycleStartDate,
+            toDate: cycleEndExclusive,
+            nextToken,
+            limit: 100, // Optimize batch size
+          });
+          allTxs.push(...res.items);
+          nextToken = res.nextToken || null;
+        } while (nextToken);
+
+        if (!mounted) return;
+
+        // Calculate Income
+        const income = allTxs.reduce((acc, tx) => {
+          if (!tx.includeInStats) return acc;
+          return tx.type === "income" ? acc + tx.amount : acc;
+        }, 0);
+        setTotalIncome(income);
+      } catch (e) {
+        console.error("Failed to load budget stats", e);
       }
-    });
-    return { totalIncome: income };
-  }, [transactions]);
+    };
+
+    fetchStats();
+    return () => {
+      mounted = false;
+    };
+  }, [cycleStartDate, cycleEndExclusive]);
 
   // Calculate Total Planned Expenses
   const totalPlannedExpenses = useMemo(() => {

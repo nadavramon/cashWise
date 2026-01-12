@@ -4,6 +4,7 @@ import React, {
   useState,
   useEffect,
   ReactNode,
+  useRef,
 } from "react";
 import { Transaction as UiTransaction } from "../types/models";
 import { useAuth } from "./AuthContext";
@@ -17,92 +18,16 @@ import {
   TransactionApi as ApiTransaction,
   UpdateTransactionInputApi,
 } from "../api/transactionsApi";
-import { getCycleRangeForDate } from "../utils/billingCycle";
-import { DateRangePresetApi } from "../api/profileApi";
+import {
+  DateRange,
+  DateRangePreset,
+  getPresetRange,
+  formatDate,
+} from "../utils/billingCycle";
+import { getErrorMessage } from "../utils/errorHandler";
+import { fromGqlTxType } from "../api/mappers";
 
-type DateRangePreset = DateRangePresetApi | "THIS_WEEK";
-
-interface DateRange {
-  preset: DateRangePreset;
-  fromDate: string; // 'YYYY-MM-DD'
-  toDate: string; // 'YYYY-MM-DD'
-}
-
-const formatDate = (d: Date): string => {
-  const yyyy = d.getFullYear();
-  const mm = `${d.getMonth() + 1}`.padStart(2, "0");
-  const dd = `${d.getDate()}`.padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-};
-
-const getNowInTimezone = (timeZone: string): Date => {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(new Date());
-
-  const y = Number(parts.find((p) => p.type === "year")?.value);
-  const m = Number(parts.find((p) => p.type === "month")?.value);
-  const d = Number(parts.find((p) => p.type === "day")?.value);
-
-  // local Date representing that calendar day
-  return new Date(y, m - 1, d);
-};
-
-// Helper to bridge the gap between `DateRangePreset` (UI) and billing logic
-const getPresetRange = (
-  preset: DateRangePreset,
-  startDay: number = 1,
-  timezone: string = "Asia/Jerusalem",
-): DateRange => {
-  const now = getNowInTimezone(timezone);
-
-  // Handle specific UI-only presets like THIS_WEEK if not covered by utility
-  if (preset === "THIS_WEEK") {
-    const day = now.getDay();
-    const diffToMonday = (day + 6) % 7;
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - diffToMonday);
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-
-    return {
-      preset,
-      fromDate: formatDate(monday),
-      toDate: formatDate(sunday),
-    };
-  }
-
-  if (preset === "CUSTOM") {
-    return {
-      preset: "CUSTOM",
-      fromDate: formatDate(now),
-      toDate: formatDate(now),
-    };
-  }
-
-  // Use the shared utility for everything else (CURRENT_CYCLE, LAST_CYCLE, THIS_MONTH, LAST_MONTH, YEAR_TO_DATE)
-  const { start, endExclusive } = getCycleRangeForDate(
-    now,
-    { startDay },
-    preset as DateRangePresetApi,
-  );
-
-  // Note: TransactionsContext uses inclusive ranges (user expects 'toDate' to be included potentially?)
-  // Actually, apiListTransactions takes from/to.
-  // The utility returns endExclusive (start of next period).
-  // We subtract 1 day from endExclusive to get the inclusive end date.
-  const endDate = new Date(endExclusive);
-  endDate.setDate(endDate.getDate() - 1);
-
-  return {
-    preset,
-    fromDate: start,
-    toDate: formatDate(endDate),
-  };
-};
+export type { DateRange, DateRangePreset };
 
 interface AddTransactionInput {
   type: "income" | "expense";
@@ -117,7 +42,7 @@ interface TransactionsContextValue {
   loading: boolean;
   error: string | null;
   dateRange: DateRange;
-  lastUpdated?: number; // Add this
+  lastUpdated?: number;
   setPresetRange: (preset: DateRangePreset) => void;
   setCustomRange: (fromDate: string, toDate: string) => void;
   refreshCurrentRange: () => Promise<void>;
@@ -134,6 +59,10 @@ interface TransactionsContextValue {
     },
   ) => Promise<void>;
   deleteTransaction: (id: string, date: string) => Promise<void>;
+  // Pagination
+  loadMore: () => Promise<void>;
+  hasNextPage: boolean;
+  loadingMore: boolean;
 }
 
 const TransactionsContext = createContext<TransactionsContextValue | undefined>(
@@ -148,22 +77,7 @@ export const useTransactions = (): TransactionsContextValue => {
   return ctx;
 };
 
-function mapApiToUi(tx: ApiTransaction | any): UiTransaction {
-  // tx is now the Refactored Transaction interface from API which uses App types
-  // But we might need to handle null vs undefined for strictness
-  return {
-    id: tx.id,
-    userId: tx.userId,
-    type: tx.type, // Already 'income' | 'expense'
-    amount: tx.amount,
-    categoryId: tx.categoryId,
-    date: tx.date,
-    note: tx.note ?? undefined,
-    includeInStats: tx.includeInStats ?? true,
-    createdAt: tx.createdAt,
-    updatedAt: tx.updatedAt ?? undefined,
-  };
-}
+
 
 export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
   children,
@@ -175,7 +89,11 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Add lastUpdated state to signal changes to consumers (Chart, CycleContext)
+  // Pagination State
+  const [nextToken, setNextTokenState] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  // Signal updates to consumers
   const [lastUpdated, setLastUpdated] = useState<number>(Date.now());
 
   // Default to CURRENT_CYCLE
@@ -187,38 +105,49 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
     };
   });
 
+  // Race condition handling
+  const lastRequestId = useRef<number>(0);
+
   const fetchTransactionsForRange = async (range: DateRange) => {
     if (!userId) {
       setTransactions([]);
       return;
     }
 
+    const requestId = Date.now();
+    lastRequestId.current = requestId;
+
     try {
       setLoading(true);
       setError(null);
 
       const allTxs: UiTransaction[] = [];
-      let nextToken: string | null = null;
+      const response = await apiListTransactions({
+        fromDate: range.fromDate,
+        toDate: range.toDate,
+        nextToken: null, // Initial load always starts from null
+        limit: 20,
+      });
 
-      do {
-        // Call the thin API wrapper
-        const response = await apiListTransactions({
-          fromDate: range.fromDate,
-          toDate: range.toDate,
-          nextToken,
-        });
+      // Check if this request is still the latest one
+      if (requestId !== lastRequestId.current) {
+        return; // Abort: a newer request has started
+      }
 
-        const mapped = response.items.map(mapApiToUi);
-        allTxs.push(...mapped);
-        nextToken = response.nextToken || null;
-      } while (nextToken);
-
-      setTransactions(allTxs);
+      setTransactions(response.items);
+      setNextTokenState(response.nextToken || null);
     } catch (e: any) {
-      console.error("Failed to load transactions", e);
-      setError(e?.message ?? "Failed to load transactions");
+      // Only set error if we are still the latest request
+      if (requestId === lastRequestId.current) {
+        const msg = getErrorMessage(e);
+        console.error("Failed to load transactions", e);
+        setError(msg);
+      }
     } finally {
-      setLoading(false);
+      // Only unset loading if we are still the latest request
+      if (requestId === lastRequestId.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -228,27 +157,23 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
 
     const targetPreset =
       (profile.overviewDateRangePreset as DateRangePreset) || "CURRENT_CYCLE";
-
     const startDay = profile.billingCycleStartDay || 1;
+    const timezone = profile.billingCycleTimezone || "Asia/Jerusalem";
 
     setDateRangeState((current) => {
-      // If the current preset is different from the target AND it's not custom/interactive, maybe update?
-      // For now, we force update only if we are still on the initial/default logic or if simple switching is desired.
-      // Let's just update based on the profile's preferred preset + startDay logic.
-      const timezone = profile.billingCycleTimezone || "Asia/Jerusalem";
+      // Re-calculate based on profile settings
       return getPresetRange(targetPreset, startDay, timezone);
     });
   }, [profile]);
 
+  // Fetch when range or user changes
   useEffect(() => {
     fetchTransactionsForRange(dateRange);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, dateRange.fromDate, dateRange.toDate]);
 
   const addTransaction = async (input: AddTransactionInput) => {
-    if (!userId) {
-      throw new Error("Not signed in");
-    }
+    if (!userId) throw new Error("Not signed in");
 
     const apiInput: ApiCreateInput = {
       type: input.type,
@@ -262,13 +187,13 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
     try {
       setError(null);
       const created = await apiCreateTransaction(apiInput);
-      const uiTx = mapApiToUi(created);
-      setTransactions((prev) => [uiTx, ...prev]);
-      setLastUpdated(Date.now()); // Signal update
+      setTransactions((prev) => [created, ...prev]);
+      setLastUpdated(Date.now());
     } catch (e: any) {
+      const msg = getErrorMessage(e);
       console.error("Failed to create transaction", e);
-      setError(e?.message ?? "Failed to create transaction");
-      throw e;
+      setError(msg);
+      throw new Error(msg);
     }
   };
 
@@ -278,7 +203,6 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
 
   const setPresetRange = (preset: DateRangePreset) => {
     const startDay = profile?.billingCycleStartDay || 1;
-
     const timezone = profile?.billingCycleTimezone || "Asia/Jerusalem";
     const range = getPresetRange(preset, startDay, timezone);
     setDateRangeState(range);
@@ -310,21 +234,12 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
       date: originalDate,
     };
 
-    if (patch.type) {
-      apiInput.type = patch.type;
-    }
-    if (typeof patch.amount === "number") {
-      apiInput.amount = patch.amount;
-    }
-    if (patch.categoryId) {
-      apiInput.categoryId = patch.categoryId;
-    }
-    if (patch.note !== undefined) {
-      apiInput.note = patch.note;
-    }
-    if (patch.includeInStats !== undefined) {
+    if (patch.type) apiInput.type = patch.type;
+    if (typeof patch.amount === "number") apiInput.amount = patch.amount;
+    if (patch.categoryId) apiInput.categoryId = patch.categoryId;
+    if (patch.note !== undefined) apiInput.note = patch.note;
+    if (patch.includeInStats !== undefined)
       apiInput.includeInStats = patch.includeInStats;
-    }
 
     try {
       setError(null);
@@ -346,11 +261,12 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
           };
         }),
       );
-      setLastUpdated(Date.now()); // Signal update
+      setLastUpdated(Date.now());
     } catch (e: any) {
+      const msg = getErrorMessage(e);
       console.error("Failed to update transaction", e);
-      setError(e?.message ?? "Failed to update transaction");
-      throw e;
+      setError(msg);
+      throw new Error(msg);
     }
   };
 
@@ -365,11 +281,35 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
       setTransactions((prev) =>
         prev.filter((tx) => !(tx.id === id && tx.date === date)),
       );
-      setLastUpdated(Date.now()); // Signal update
+      setLastUpdated(Date.now());
     } catch (e: any) {
+      const msg = getErrorMessage(e);
       console.error("Failed to delete transaction", e);
-      setError(e?.message ?? "Failed to delete transaction");
-      throw e;
+      setError(msg);
+      throw new Error(msg);
+    }
+  };
+
+  const loadMore = async () => {
+    if (!nextToken || loadingMore || !userId) return;
+
+    try {
+      setLoadingMore(true);
+      const response = await apiListTransactions({
+        fromDate: dateRange.fromDate,
+        toDate: dateRange.toDate,
+        nextToken,
+        limit: 20,
+      });
+
+      setTransactions((prev) => [...prev, ...response.items]);
+      setNextTokenState(response.nextToken || null);
+    } catch (e: any) {
+      console.error("Failed to load more transactions", e);
+      // We generally don't set the global error for pagination failures to avoid blocking the UI,
+      // but you could add a toast or separate error state if desired.
+    } finally {
+      setLoadingMore(false);
     }
   };
 
@@ -387,6 +327,9 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
         addTransaction,
         updateTransaction,
         deleteTransaction,
+        loadMore,
+        hasNextPage: !!nextToken,
+        loadingMore,
       }}
     >
       {children}

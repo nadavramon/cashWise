@@ -18,7 +18,8 @@ import { useTransactions } from "../../context/TransactionsContext";
 import { useCategories } from "../../context/CategoriesContext";
 import { useProfile } from "../../context/ProfileContext";
 import TransactionForm from "../../components/features/transactions/TransactionForm";
-import type { Transaction } from "../../types/models";
+import { Transaction } from "../../types/models";
+import { apiListTransactions } from "../../api/transactionsApi";
 import { t } from "../../config/i18n";
 
 type DailyRoute = RouteProp<OverviewStackParamList, "DailyTransactions">;
@@ -60,10 +61,31 @@ const DailyTransactionsScreen: React.FC = () => {
     });
   }, [navigation, date, isDarkMode, themeColor, language]);
 
-  const dayTransactions = useMemo(
-    () => transactions.filter((t) => t.date === date),
-    [transactions, date],
+  // Fetch transactions for this day locally since global context is paginated
+  const [dayTransactions, setDayTransactions] = React.useState<Transaction[]>(
+    [],
   );
+
+  React.useEffect(() => {
+    let mounted = true;
+    const loadDay = async () => {
+      try {
+        const res = await apiListTransactions({
+          fromDate: date,
+          toDate: date,
+        });
+        if (mounted) {
+          setDayTransactions(res.items);
+        }
+      } catch (e) {
+        console.error("Failed to load daily transactions", e);
+      }
+    };
+    loadDay();
+    return () => {
+      mounted = false;
+    };
+  }, [date]);
 
   const categoryNameById = useMemo(() => {
     const map: Record<string, string> = {};

@@ -16,6 +16,7 @@ import { DateRangePresetApi } from "../api/profileApi";
 import { useTransactions } from "./TransactionsContext";
 
 import { getCycleRangeForDate } from "../utils/billingCycle";
+import { getErrorMessage } from "../utils/errorHandler";
 
 /*
   Cycle Calculation Logic:
@@ -120,7 +121,7 @@ export const OverviewCycleProvider: React.FC<{ children: ReactNode }> = ({
       setTransactions(allTxs);
     } catch (err: any) {
       console.error("Error fetching transactions:", err);
-      setError(err.message || "Failed to fetch transactions");
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }

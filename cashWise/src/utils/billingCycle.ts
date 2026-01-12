@@ -1,20 +1,104 @@
 // src/utils/billingCycle.ts
 import { DateRangePresetApi } from "../api/profileApi";
 
+export type DateRangePreset = DateRangePresetApi | "THIS_WEEK" | "CUSTOM";
+
+export interface DateRange {
+  preset: DateRangePreset;
+  fromDate: string; // 'YYYY-MM-DD'
+  toDate: string; // 'YYYY-MM-DD' - typically inclusive in UI usage
+}
+
 export interface BillingCycleConfig {
   startDay: number; // 1–28
-  timezone?: string; // we’ll ignore for now; can integrate luxon later
+  timezone?: string;
 }
+
+export function formatDate(d: Date): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0"); // 1–12
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+export const getNowInTimezone = (timeZone: string): Date => {
+  try {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(new Date());
+
+    const y = Number(parts.find((p) => p.type === "year")?.value);
+    const m = Number(parts.find((p) => p.type === "month")?.value);
+    const d = Number(parts.find((p) => p.type === "day")?.value);
+
+    return new Date(y, m - 1, d);
+  } catch (e) {
+    // Fallback to local time if timezone is invalid
+    return new Date();
+  }
+};
+
+/**
+ * Main utility to resolve any preset (UI or API) into a concrete date range.
+ */
+export const getPresetRange = (
+  preset: DateRangePreset,
+  startDay: number = 1,
+  timezone: string = "Asia/Jerusalem", // Default fallback
+): DateRange => {
+  const now = getNowInTimezone(timezone);
+
+  // 1. Handle CUSTOM logic - usually handled by caller, but safe default
+  if (preset === "CUSTOM") {
+    return {
+      preset: "CUSTOM",
+      fromDate: formatDate(now),
+      toDate: formatDate(now),
+    };
+  }
+
+  // 2. Handle THIS_WEEK (UI Only)
+  if (preset === "THIS_WEEK") {
+    const day = now.getDay();
+    // Monday as start of week? (0=Sun, 1=Mon)
+    // Adjust logic to match user expectation: "Monday" based
+    const diffToMonday = (day + 6) % 7;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - diffToMonday);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    return {
+      preset,
+      fromDate: formatDate(monday),
+      toDate: formatDate(sunday),
+    };
+  }
+
+  // 3. Handle specific presets via shared logic
+  const { start, endExclusive } = getCycleRangeForDate(
+    now,
+    { startDay },
+    preset as DateRangePresetApi,
+  );
+
+  // Convert endExclusive (start of next period) to inclusive end date
+  const endDate = new Date(endExclusive);
+  endDate.setDate(endDate.getDate() - 1);
+
+  return {
+    preset,
+    fromDate: start,
+    toDate: formatDate(endDate),
+  };
+};
 
 /**
  * Returns [start, endExclusive] in YYYY-MM-DD based on the preset and offset.
- *
- * @param today - The reference "today" (usually new Date())
- * @param config - Cycle configuration (start day)
- * @param preset - The selected date range strategy
- * @param offset - Shift the range back/forward.
- *                 For CYCLE/MONTH presets: 1 unit = 1 cycle/month.
- *                 For YEAR_TO_DATE: 1 unit = 1 year.
+ * Used internally and by other contexts.
  */
 export function getCycleRangeForDate(
   today: Date,
@@ -22,7 +106,7 @@ export function getCycleRangeForDate(
   preset: DateRangePresetApi,
   offset: number = 0,
 ): { start: string; endExclusive: string } {
-  // 0. Handle CUSTOM (Should be handled by caller with specific dates, but prevent fallthrough)
+  // 0. Fallback for CUSTOM
   if (preset === "CUSTOM") {
     return {
       start: formatDate(today),
@@ -32,18 +116,10 @@ export function getCycleRangeForDate(
 
   // 1. Handle Calendar Month Logic
   if (preset === "THIS_MONTH" || preset === "LAST_MONTH") {
-    // Base: Start of current month
-    let baseDate = new Date(today.getFullYear(), today.getMonth(), 1);
-
-    // If "LAST_MONTH" is selected, it's effectively "THIS_MONTH" with offset +1 (or start -1 month)
-    // Let's standardise: default offset=0 means "This Month".
-    // If preset is LAST_MONTH, we add 1 to the 'logical' offset (backwards).
+    const baseDate = new Date(today.getFullYear(), today.getMonth(), 1);
     const effectiveOffset = offset + (preset === "LAST_MONTH" ? 1 : 0);
-
-    // Go back 'effectiveOffset' months
     const start = addMonths(baseDate, -effectiveOffset);
     const end = addMonths(start, 1);
-
     return {
       start: formatDate(start),
       endExclusive: formatDate(end),
@@ -54,16 +130,10 @@ export function getCycleRangeForDate(
   if (preset === "YEAR_TO_DATE") {
     const year = today.getFullYear() - offset;
     const start = new Date(year, 0, 1); // Jan 1st
-    // End is "now" (exclusive would be tomorrow?)
-    // or typically YTD means up to *now*.
-    // For range queries "toDate" is usually exclusive.
-    // Let's set end to tomorrow to include today's transactions.
+    // End is "now" + 1 day (exclusive)
     const end = new Date(today);
     end.setDate(end.getDate() + 1);
 
-    // Note: YTD usually implies dynamic end date.
-    // Use fixed end of year? No, YTD is "so far".
-    // But if I go back 1 year (offset=1), it should probably be the FULL previous year?
     if (offset > 0) {
       // Full previous year
       return {
@@ -71,7 +141,6 @@ export function getCycleRangeForDate(
         endExclusive: formatDate(new Date(year + 1, 0, 1)),
       };
     }
-
     return {
       start: formatDate(start),
       endExclusive: formatDate(end),
@@ -79,34 +148,27 @@ export function getCycleRangeForDate(
   }
 
   // 3. Handle Billing Cycle Logic (CURRENT_CYCLE, LAST_CYCLE)
-  // Default to CURRENT_CYCLE if null/unknown
-
   const startDay = config.startDay;
-  // Work in local time for now
   const year = today.getFullYear();
   const month = today.getMonth(); // 0–11
 
-  // Candidate start in this month
   const candidateStart = new Date(year, month, startDay);
   let currentStart: Date;
 
   if (today >= candidateStart) {
-    // Cycle started this month
     currentStart = candidateStart;
   } else {
-    // Cycle started last month
     currentStart = new Date(year, month - 1, startDay);
   }
 
   const effectiveOffset = offset + (preset === "LAST_CYCLE" ? 1 : 0);
 
-  // Apply offset (in months)
   const start = addMonths(currentStart, -effectiveOffset);
-  const end = addMonths(start, 1); // next cycle start
+  const end = addMonths(start, 1);
 
   return {
-    start: formatDate(start), // inclusive
-    endExclusive: formatDate(end), // exclusive
+    start: formatDate(start),
+    endExclusive: formatDate(end),
   };
 }
 
@@ -115,11 +177,4 @@ function addMonths(date: Date, deltaMonths: number): Date {
   const targetMonth = d.getMonth() + deltaMonths;
   d.setMonth(targetMonth);
   return d;
-}
-
-function formatDate(d: Date): string {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0"); // 1–12
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
 }

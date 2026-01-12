@@ -10,7 +10,7 @@ import {
   useColorScheme,
   Dimensions,
 } from "react-native";
-import { PieChart } from "react-native-chart-kit";
+import { PieChart } from "react-native-gifted-charts";
 import { Ionicons } from "@expo/vector-icons";
 
 import { useOverviewCycle } from "../../../context/CycleContext";
@@ -22,6 +22,8 @@ import { getCurrencySymbol } from "../../../utils/currency";
 interface SpendingViewProps {
   themeColor: string;
 }
+
+
 
 const SpendingView: React.FC<SpendingViewProps> = ({ themeColor }) => {
   const isDarkMode = useColorScheme() === "dark";
@@ -95,11 +97,9 @@ const SpendingView: React.FC<SpendingViewProps> = ({ themeColor }) => {
 
   const pieData = React.useMemo(() => {
     return spendingChartData.map((item) => ({
-      name: item.name,
-      population: item.total,
+      value: item.total,
       color: item.color,
-      legendFontColor: item.legendFontColor,
-      legendFontSize: item.legendFontSize,
+      text: item.name,
     }));
   }, [spendingChartData]);
 
@@ -235,26 +235,17 @@ const SpendingView: React.FC<SpendingViewProps> = ({ themeColor }) => {
           <View style={{ alignItems: "center", justifyContent: "center" }}>
             <PieChart
               data={pieData}
-              width={width - 48}
-              height={220}
-              chartConfig={chartConfig}
-              accessor={"population"}
-              backgroundColor={"transparent"}
-              paddingLeft={"15"}
-              center={[width / 4, 0]}
-              absolute={false}
-              hasLegend={false}
+              donut
+              radius={110}
+              innerRadius={80}
+              centerLabelComponent={() => (
+                <View style={{ justifyContent: "center", alignItems: "center" }}>
+                  <Text style={[styles.doughnutTotal, { color: textColor }]}>
+                    {formatAmount(totalAmount)}
+                  </Text>
+                </View>
+              )}
             />
-            <View
-              style={[
-                styles.doughnutHole,
-                { backgroundColor: isDarkMode ? "#1a1a1a" : "#fff" },
-              ]}
-            >
-              <Text style={[styles.doughnutTotal, { color: textColor }]}>
-                {formatAmount(totalAmount)}
-              </Text>
-            </View>
           </View>
         ) : (
           <Text style={styles.emptyText}>

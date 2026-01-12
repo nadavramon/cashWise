@@ -16,6 +16,7 @@ import {
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { TransactionsStackParamList } from "../../navigation/TransactionsStack";
 import { useTransactions } from "../../context/TransactionsContext";
+import { apiListTransactions } from "../../api/transactionsApi";
 import { useCategories } from "../../context/CategoriesContext";
 import { Transaction } from "../../types/models";
 import { t } from "../../config/i18n";
@@ -40,10 +41,35 @@ const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
   const [includeInStats, setIncludeInStats] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const transaction: Transaction | undefined = useMemo(
+  const [localTransaction, setLocalTransaction] = useState<Transaction | null>(null);
+
+  const contextTransaction = useMemo(
     () => transactions.find((t) => t.id === id && t.date === date),
     [transactions, id, date],
   );
+
+  const transaction = contextTransaction || localTransaction;
+
+  useEffect(() => {
+    let mounted = true;
+    // If not found in context (due to pagination), fetch it explicitly
+    if (!contextTransaction && !localTransaction) {
+      const fetchTx = async () => {
+        try {
+          // Fetch logic: list transactions for that specific date (efficient query)
+          const res = await apiListTransactions({ fromDate: date, toDate: date });
+          const found = res.items.find((t) => t.id === id);
+          if (mounted && found) {
+            setLocalTransaction(found);
+          }
+        } catch (e) {
+          console.error("Failed to fetch transaction for edit", e);
+        }
+      };
+      fetchTx();
+    }
+    return () => { mounted = false; };
+  }, [contextTransaction, localTransaction, id, date]);
 
   useEffect(() => {
     if (!transaction) return;

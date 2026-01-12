@@ -4,6 +4,7 @@ import {
     Transaction,
     ListTransactionsInputApi,
 } from "../api/transactionsApi";
+import { getErrorMessage } from "../utils/errorHandler";
 
 interface UsePaginatedTransactionsParams {
     fromDate: string; // 'YYYY-MM-DD'
@@ -78,7 +79,7 @@ export function usePaginatedTransactions({
             } catch (e: any) {
                 console.error("Failed to load transactions", e);
                 if (mountedRef.current) {
-                    setError(e?.message ?? "Unknown error");
+                    setError(getErrorMessage(e));
                 }
             } finally {
                 if (mountedRef.current) {

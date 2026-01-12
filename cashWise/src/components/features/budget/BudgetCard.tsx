@@ -4,25 +4,15 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  LayoutAnimation,
-  Platform,
-  UIManager,
   useColorScheme,
 } from "react-native";
+import Animated, { LinearTransition } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
-import { PieChart } from "react-native-chart-kit";
+import { PieChart } from "react-native-gifted-charts";
 import { CATEGORY_REPO } from "../../../data/categoryRepo";
 import { PlannedBudgetItem } from "../../../types/budget";
 import { t } from "../../../config/i18n";
 import { useProfile } from "../../../context/ProfileContext";
-
-// Enable LayoutAnimation on Android
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 interface BudgetCardProps {
   plannedBudgets: PlannedBudgetItem[];
@@ -47,7 +37,6 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
   const cardBg = isDark ? "rgba(30, 30, 30, 0.6)" : "rgba(255, 255, 255, 0.8)";
 
   const toggleExpand = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsExpanded(!isExpanded);
   };
 
@@ -56,111 +45,99 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
     return plannedBudgets.map((item) => {
       const group = CATEGORY_REPO.find((g) => g.id === item.groupId);
       return {
-        name: item.subCategoryLabel,
-        population: item.amount,
+        value: item.amount,
         color: group?.color || "#999",
-        legendFontColor: textColor,
-        legendFontSize: 12,
+        text: item.subCategoryLabel,
       };
     });
   }, [plannedBudgets, textColor]);
 
   return (
-    <TouchableOpacity
+    <Animated.View
+      layout={LinearTransition.springify().damping(15)}
       style={[styles.card, { backgroundColor: cardBg }]}
-      activeOpacity={1}
-      onPress={isExpanded ? toggleExpand : undefined}
     >
-      <View style={styles.cardHeader}>
-        {/* Left: Chart */}
-        <View style={styles.chartContainer}>
-          <PieChart
-            data={
-              chartData.length > 0
-                ? chartData
-                : [
-                    {
-                      name: t("empty", language),
-                      population: 1,
-                      color: "#ddd",
-                      legendFontColor: "transparent",
-                      legendFontSize: 0,
-                    },
-                  ]
-            }
-            width={80}
-            height={80}
-            chartConfig={{
-              color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-            }}
-            accessor="population"
-            backgroundColor="transparent"
-            paddingLeft="20"
-            hasLegend={false}
-            absolute={false}
-          />
-        </View>
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={isExpanded ? toggleExpand : undefined}
+      >
+        <View style={styles.cardHeader}>
+          {/* Left: Chart */}
+          <View style={styles.chartContainer}>
+            <PieChart
+              data={
+                chartData.length > 0
+                  ? chartData
+                  : [{ value: 1, color: "#ddd" }]
+              }
+              donut
+              radius={40}
+              innerRadius={30}
+              semiCircle={false}
+            />
+          </View>
 
-        {/* Right: Text Info */}
-        <View style={styles.cardInfo}>
-          <Text style={[styles.cardLabel, { color: subTextColor }]}>
-            {t("totalPlannedExpenses", language)}
-          </Text>
-          <Text style={[styles.cardAmount, { color: textColor }]}>
-            {currencySymbol}
-            {totalPlannedExpenses.toLocaleString()}
-          </Text>
-        </View>
-
-        {/* Far Right: Expand Button (only visible when collapsed) */}
-        {!isExpanded && (
-          <TouchableOpacity onPress={toggleExpand} style={styles.expandButton}>
-            <Ionicons name="chevron-down" size={24} color={subTextColor} />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Expanded Content: List */}
-      {isExpanded && (
-        <View style={styles.expandedContent}>
-          <View style={styles.divider} />
-          {plannedBudgets.map((item) => {
-            const percentageOfIncome =
-              totalIncome > 0
-                ? ((item.amount / totalIncome) * 100).toFixed(1)
-                : "0.0";
-
-            const group = CATEGORY_REPO.find((g) => g.id === item.groupId);
-            const color = group?.color || "#999";
-
-            return (
-              <View key={item.id} style={styles.listItem}>
-                <View style={styles.listItemLeft}>
-                  <View style={[styles.colorDot, { backgroundColor: color }]} />
-                  <Text style={[styles.itemName, { color: textColor }]}>
-                    {item.subCategoryLabel}
-                  </Text>
-                  <Text
-                    style={[styles.itemPercentage, { color: subTextColor }]}
-                  >
-                    {percentageOfIncome}%
-                  </Text>
-                </View>
-                <Text style={[styles.itemAmount, { color: textColor }]}>
-                  {currencySymbol}
-                  {item.amount.toLocaleString()}
-                </Text>
-              </View>
-            );
-          })}
-          {plannedBudgets.length === 0 && (
-            <Text style={[styles.noDataText, { color: subTextColor }]}>
-              {t("noPlannedExpenses", language)}
+          {/* Right: Text Info */}
+          <View style={styles.cardInfo}>
+            <Text style={[styles.cardLabel, { color: subTextColor }]}>
+              {t("totalPlannedExpenses", language)}
             </Text>
+            <Text style={[styles.cardAmount, { color: textColor }]}>
+              {currencySymbol}
+              {totalPlannedExpenses.toLocaleString()}
+            </Text>
+          </View>
+
+          {/* Far Right: Expand Button (only visible when collapsed) */}
+          {!isExpanded && (
+            <TouchableOpacity onPress={toggleExpand} style={styles.expandButton}>
+              <Ionicons name="chevron-down" size={24} color={subTextColor} />
+            </TouchableOpacity>
           )}
         </View>
-      )}
-    </TouchableOpacity>
+
+        {/* Expanded Content: List */}
+        {isExpanded && (
+          <View style={styles.expandedContent}>
+            <View style={styles.divider} />
+            {plannedBudgets.map((item) => {
+              const percentageOfIncome =
+                totalIncome > 0
+                  ? ((item.amount / totalIncome) * 100).toFixed(1)
+                  : "0.0";
+
+              const group = CATEGORY_REPO.find((g) => g.id === item.groupId);
+              const color = group?.color || "#999";
+
+              return (
+                <View key={item.id} style={styles.listItem}>
+                  <View style={styles.listItemLeft}>
+                    <View style={[styles.colorDot, { backgroundColor: color }]} />
+                    <Text style={[styles.itemName, { color: textColor }]}>
+                      {item.subCategoryLabel}
+                    </Text>
+                    <Text
+                      style={[styles.itemPercentage, { color: subTextColor }]}
+                    >
+                      {percentageOfIncome}%
+                    </Text>
+                  </View>
+                  <Text style={[styles.itemAmount, { color: textColor }]}>
+                    {currencySymbol}
+                    {item.amount.toLocaleString()}
+                  </Text>
+                </View>
+              );
+            })}
+            {plannedBudgets.length === 0 && (
+              <Text style={[styles.noDataText, { color: subTextColor }]}>
+                {t("noPlannedExpenses", language)}
+              </Text>
+            )}
+          </View>
+        )}
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 
