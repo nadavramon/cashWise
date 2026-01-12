@@ -68,7 +68,7 @@ export const OverviewCycleProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const { profile } = useProfile();
-  const { lastUpdated } = useTransactions();
+  useTransactions();
 
   const [offset, setOffset] = useState(0);
   const [start, setStart] = useState<string>("");
@@ -125,7 +125,7 @@ export const OverviewCycleProvider: React.FC<{ children: ReactNode }> = ({
     } finally {
       setLoading(false);
     }
-  }, [profile, offset, lastUpdated]);
+  }, [profile, offset]);
 
   // Reset offset when specific profile fields change
   useEffect(() => {

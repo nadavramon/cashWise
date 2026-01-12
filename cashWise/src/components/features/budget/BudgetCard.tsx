@@ -50,7 +50,7 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
         text: item.subCategoryLabel,
       };
     });
-  }, [plannedBudgets, textColor]);
+  }, [plannedBudgets]);
 
   return (
     <Animated.View
@@ -66,9 +66,7 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
           <View style={styles.chartContainer}>
             <PieChart
               data={
-                chartData.length > 0
-                  ? chartData
-                  : [{ value: 1, color: "#ddd" }]
+                chartData.length > 0 ? chartData : [{ value: 1, color: "#ddd" }]
               }
               donut
               radius={40}
@@ -90,7 +88,10 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
 
           {/* Far Right: Expand Button (only visible when collapsed) */}
           {!isExpanded && (
-            <TouchableOpacity onPress={toggleExpand} style={styles.expandButton}>
+            <TouchableOpacity
+              onPress={toggleExpand}
+              style={styles.expandButton}
+            >
               <Ionicons name="chevron-down" size={24} color={subTextColor} />
             </TouchableOpacity>
           )}
@@ -112,7 +113,9 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
               return (
                 <View key={item.id} style={styles.listItem}>
                   <View style={styles.listItemLeft}>
-                    <View style={[styles.colorDot, { backgroundColor: color }]} />
+                    <View
+                      style={[styles.colorDot, { backgroundColor: color }]}
+                    />
                     <Text style={[styles.itemName, { color: textColor }]}>
                       {item.subCategoryLabel}
                     </Text>

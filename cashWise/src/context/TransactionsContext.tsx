@@ -15,7 +15,6 @@ import {
   apiUpdateTransaction,
   apiDeleteTransaction,
   CreateTransactionInput as ApiCreateInput,
-  TransactionApi as ApiTransaction,
   UpdateTransactionInputApi,
 } from "../api/transactionsApi";
 import {
@@ -25,7 +24,6 @@ import {
   formatDate,
 } from "../utils/billingCycle";
 import { getErrorMessage } from "../utils/errorHandler";
-import { fromGqlTxType } from "../api/mappers";
 
 export type { DateRange, DateRangePreset };
 
@@ -77,8 +75,6 @@ export const useTransactions = (): TransactionsContextValue => {
   return ctx;
 };
 
-
-
 export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
@@ -121,7 +117,6 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
       setLoading(true);
       setError(null);
 
-      const allTxs: UiTransaction[] = [];
       const response = await apiListTransactions({
         fromDate: range.fromDate,
         toDate: range.toDate,

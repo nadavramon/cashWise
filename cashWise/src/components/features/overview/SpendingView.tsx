@@ -8,7 +8,6 @@ import {
   Modal,
   TouchableWithoutFeedback,
   useColorScheme,
-  Dimensions,
 } from "react-native";
 import { PieChart } from "react-native-gifted-charts";
 import { Ionicons } from "@expo/vector-icons";
@@ -23,8 +22,6 @@ interface SpendingViewProps {
   themeColor: string;
 }
 
-
-
 const SpendingView: React.FC<SpendingViewProps> = ({ themeColor }) => {
   const isDarkMode = useColorScheme() === "dark";
   const textColor = isDarkMode ? "#FFFFFF" : "#333333";
@@ -32,7 +29,6 @@ const SpendingView: React.FC<SpendingViewProps> = ({ themeColor }) => {
   const cardBg = isDarkMode ? "rgba(30, 30, 30, 0.8)" : "#FFFFFF";
   const cardBorder = isDarkMode ? "rgba(255,255,255,0.1)" : "#ddd";
 
-  const { width } = Dimensions.get("window");
   const [showFilterMenu, setShowFilterMenu] = useState(false);
 
   // --- State ---
@@ -102,13 +98,6 @@ const SpendingView: React.FC<SpendingViewProps> = ({ themeColor }) => {
       text: item.name,
     }));
   }, [spendingChartData]);
-
-  const chartConfig = React.useMemo(
-    () => ({
-      color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`, // Only for pie labels?
-    }),
-    [],
-  );
 
   const dynamicCardStyle = [
     styles.card,
@@ -239,7 +228,9 @@ const SpendingView: React.FC<SpendingViewProps> = ({ themeColor }) => {
               radius={110}
               innerRadius={80}
               centerLabelComponent={() => (
-                <View style={{ justifyContent: "center", alignItems: "center" }}>
+                <View
+                  style={{ justifyContent: "center", alignItems: "center" }}
+                >
                   <Text style={[styles.doughnutTotal, { color: textColor }]}>
                     {formatAmount(totalAmount)}
                   </Text>

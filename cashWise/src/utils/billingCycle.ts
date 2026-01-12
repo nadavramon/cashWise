@@ -35,7 +35,7 @@ export const getNowInTimezone = (timeZone: string): Date => {
     const d = Number(parts.find((p) => p.type === "day")?.value);
 
     return new Date(y, m - 1, d);
-  } catch (e) {
+  } catch {
     // Fallback to local time if timezone is invalid
     return new Date();
   }

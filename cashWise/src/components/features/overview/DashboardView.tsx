@@ -116,7 +116,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
       const dayStr = date.slice(8, 10);
       const isFuture = currentIndex === -1 || index > currentIndex;
       const isCurrent = index === currentIndex;
-      const value = isFuture ? undefined : dailySpendingMap[date] ?? 0;
+      const value = isFuture ? undefined : (dailySpendingMap[date] ?? 0);
       const showLabel = index % 5 === 0 || index === lastIndex;
 
       return {
@@ -126,24 +126,24 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         hideDataPoint: !isCurrent,
         customDataPoint: isCurrent
           ? () => (
-            <View style={styles.currentDotWrapper}>
-              <View
-                style={[
-                  styles.currentDotGlow,
-                  { backgroundColor: themeColor, shadowColor: themeColor },
-                ]}
-              />
-              <View
-                style={[
-                  styles.currentDotCore,
-                  {
-                    backgroundColor: themeColor,
-                    borderColor: isDarkMode ? "#1A1A1A" : "#FFFFFF",
-                  },
-                ]}
-              />
-            </View>
-          )
+              <View style={styles.currentDotWrapper}>
+                <View
+                  style={[
+                    styles.currentDotGlow,
+                    { backgroundColor: themeColor, shadowColor: themeColor },
+                  ]}
+                />
+                <View
+                  style={[
+                    styles.currentDotCore,
+                    {
+                      backgroundColor: themeColor,
+                      borderColor: isDarkMode ? "#1A1A1A" : "#FFFFFF",
+                    },
+                  ]}
+                />
+              </View>
+            )
           : undefined,
         labelTextStyle: { color: subTextColor, fontSize: 10 },
       };
@@ -177,9 +177,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   const [calendarContentWidth, setCalendarContentWidth] = useState(
     Math.max(width - 48, 0),
   );
-  const itemWidth = Math.floor(
-    Math.max(calendarContentWidth - GAP * 6, 0) / 7,
-  );
+  const itemWidth = Math.floor(Math.max(calendarContentWidth - GAP * 6, 0) / 7);
 
   const [chartWidth, setChartWidth] = useState(0);
   const [pointerState, setPointerState] = useState<{
@@ -219,38 +217,43 @@ const DashboardView: React.FC<DashboardViewProps> = ({
     pointerState.index <= currentIndex;
   const tooltipLeft = pointerState
     ? Math.min(
-      Math.max(pointerState.x - tooltipWidth / 2, 0),
-      Math.max(resolvedChartWidth - tooltipWidth, 0),
-    )
+        Math.max(pointerState.x - tooltipWidth / 2, 0),
+        Math.max(resolvedChartWidth - tooltipWidth, 0),
+      )
     : 0;
 
-  const pointerConfig = React.useMemo(() => ({
-    pointerStripHeight: chartHeight,
-    pointerStripColor: isDarkMode ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)",
-    pointerStripWidth: 1,
-    pointerColor: themeColor,
-    radius: 4,
-    activatePointersOnLongPress: false,
-    activatePointersInstantlyOnTouch: true,
-    resetPointerIndexOnRelease: true,
-    autoAdjustPointerLabelPosition: false,
-    pointerStripUptoDataPoint: true,
-    pointerComponent: () => (
-      <View
-        style={[
-          styles.pointerDot,
-          {
-            backgroundColor: themeColor,
-            borderColor: isDarkMode ? "#1A1A1A" : "#FFFFFF",
-            borderWidth: 1,
-          },
-        ]}
-      />
-    ),
-    onPointerLeave: () => {
-      setPointerState(null);
-    },
-  }), [chartHeight, isDarkMode, themeColor]);
+  const pointerConfig = React.useMemo(
+    () => ({
+      pointerStripHeight: chartHeight,
+      pointerStripColor: isDarkMode
+        ? "rgba(255,255,255,0.2)"
+        : "rgba(0,0,0,0.1)",
+      pointerStripWidth: 1,
+      pointerColor: themeColor,
+      radius: 4,
+      activatePointersOnLongPress: false,
+      activatePointersInstantlyOnTouch: true,
+      resetPointerIndexOnRelease: true,
+      autoAdjustPointerLabelPosition: false,
+      pointerStripUptoDataPoint: true,
+      pointerComponent: () => (
+        <View
+          style={[
+            styles.pointerDot,
+            {
+              backgroundColor: themeColor,
+              borderColor: isDarkMode ? "#1A1A1A" : "#FFFFFF",
+              borderWidth: 1,
+            },
+          ]}
+        />
+      ),
+      onPointerLeave: () => {
+        setPointerState(null);
+      },
+    }),
+    [chartHeight, isDarkMode, themeColor],
+  );
 
   if (error) {
     return (
@@ -269,7 +272,9 @@ const DashboardView: React.FC<DashboardViewProps> = ({
         <Text style={[styles.errorText, { color: textColor }]}>
           Failed to load data
         </Text>
-        <Text style={[styles.errorSubText, { color: subTextColor }]}>{error}</Text>
+        <Text style={[styles.errorSubText, { color: subTextColor }]}>
+          {error}
+        </Text>
         <TouchableOpacity
           style={[styles.retryButton, { backgroundColor: themeColor }]}
           onPress={() => refreshTransactions()}
@@ -362,14 +367,11 @@ const DashboardView: React.FC<DashboardViewProps> = ({
               height={chartHeight}
               width={resolvedChartWidth}
               adjustToWidth={true}
-
               // Spacing fixes for sparkline
               initialSpacing={initialSpacing}
               endSpacing={endSpacing}
-
               color={themeColor}
               thickness={3}
-
               curved
               isAnimated
               hideRules
@@ -386,25 +388,27 @@ const DashboardView: React.FC<DashboardViewProps> = ({
               xAxisLabelTextStyle={{ color: subTextColor, fontSize: 12 }}
               xAxisTextNumberOfLines={1}
               labelsExtraHeight={28}
-
               mostNegativeValue={mostNegativeValue}
               noOfSectionsBelowXAxis={noOfSectionsBelowXAxis}
               maxValue={maxValue}
               endIndex={currentIndex >= 0 ? currentIndex : 0}
-
               showDataPointsForMissingValues={false}
               interpolateMissingValues={false}
               extrapolateMissingValues={false}
               dataPointsRadius={0}
-
-              getPointerProps={({ pointerIndex, pointerX }: { pointerIndex: number; pointerX: number }) => {
+              getPointerProps={({
+                pointerIndex,
+                pointerX,
+              }: {
+                pointerIndex: number;
+                pointerX: number;
+              }) => {
                 if (pointerIndex < 0 || pointerIndex > currentIndex) {
                   setPointerState(null);
                   return;
                 }
                 setPointerState({ index: pointerIndex, x: pointerX });
               }}
-
               // Interaction
               pointerConfig={pointerConfig}
             />
@@ -427,10 +431,10 @@ const DashboardView: React.FC<DashboardViewProps> = ({
             </Text>
           </View>
         </View>
-      </View >
+      </View>
 
       {/* Calendar Card */}
-      < View style={[dynamicCardStyle, styles.calendarCard]} >
+      <View style={[dynamicCardStyle, styles.calendarCard]}>
         <Text style={[styles.cardTitle, { color: textColor }]}>Calendar</Text>
         <View
           style={styles.calendarContent}
@@ -483,16 +487,18 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                       width: itemWidth,
                       marginRight: isLastInRow ? 0 : GAP,
                       marginBottom: isLastRow ? 0 : GAP,
-                      borderColor: isDarkMode ? "rgba(255,255,255,0.1)" : "#eee",
+                      borderColor: isDarkMode
+                        ? "rgba(255,255,255,0.1)"
+                        : "#eee",
                       opacity: isFuture ? 0.3 : 1,
                     },
                     hasSpending &&
-                    !isFuture && {
-                      backgroundColor: isDarkMode
-                        ? "rgba(2, 195, 189, 0.15)"
-                        : "#E0F7FA",
-                      borderColor: themeColor,
-                    },
+                      !isFuture && {
+                        backgroundColor: isDarkMode
+                          ? "rgba(2, 195, 189, 0.15)"
+                          : "#E0F7FA",
+                        borderColor: themeColor,
+                      },
                   ]}
                   onPress={() => onDayPress(date)}
                 >
@@ -501,7 +507,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                       styles.dayText,
                       { color: textColor },
                       hasSpending &&
-                      !isFuture && { fontWeight: "700", color: themeColor },
+                        !isFuture && { fontWeight: "700", color: themeColor },
                     ]}
                   >
                     {dayNum}
@@ -519,8 +525,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
             })}
           </View>
         </View>
-      </View >
-    </ScrollView >
+      </View>
+    </ScrollView>
   );
 };
 
@@ -534,7 +540,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderWidth: 1,
     minHeight: 200, // Enforce minimum height for consistency
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   },
   chartCard: {
     paddingBottom: 20,

@@ -14,7 +14,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RouteProp } from "@react-navigation/native";
 
 import type { OverviewStackParamList } from "../../navigation/OverviewStack";
-import { useTransactions } from "../../context/TransactionsContext";
+
 import { useCategories } from "../../context/CategoriesContext";
 import { useProfile } from "../../context/ProfileContext";
 import TransactionForm from "../../components/features/transactions/TransactionForm";
@@ -34,7 +34,6 @@ const DailyTransactionsScreen: React.FC = () => {
 
   const [showAddModal, setShowAddModal] = React.useState(false);
 
-  const { transactions } = useTransactions();
   const { categories } = useCategories();
   const { profile } = useProfile();
   const language = profile?.language || "en";

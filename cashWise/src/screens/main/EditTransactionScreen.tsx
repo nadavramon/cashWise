@@ -41,7 +41,9 @@ const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
   const [includeInStats, setIncludeInStats] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const [localTransaction, setLocalTransaction] = useState<Transaction | null>(null);
+  const [localTransaction, setLocalTransaction] = useState<Transaction | null>(
+    null,
+  );
 
   const contextTransaction = useMemo(
     () => transactions.find((t) => t.id === id && t.date === date),
@@ -57,7 +59,10 @@ const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
       const fetchTx = async () => {
         try {
           // Fetch logic: list transactions for that specific date (efficient query)
-          const res = await apiListTransactions({ fromDate: date, toDate: date });
+          const res = await apiListTransactions({
+            fromDate: date,
+            toDate: date,
+          });
           const found = res.items.find((t) => t.id === id);
           if (mounted && found) {
             setLocalTransaction(found);
@@ -68,7 +73,9 @@ const EditTransactionScreen: React.FC<Props> = ({ route, navigation }) => {
       };
       fetchTx();
     }
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [contextTransaction, localTransaction, id, date]);
 
   useEffect(() => {

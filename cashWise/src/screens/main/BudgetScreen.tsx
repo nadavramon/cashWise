@@ -12,7 +12,7 @@ import { useProfile } from "../../context/ProfileContext";
 import { useBudget } from "../../context/BudgetContext";
 import { getCurrencySymbol } from "../../utils/currency";
 import { apiListTransactions } from "../../api/transactionsApi";
-import { fromGqlTxType } from "../../api/mappers"; // Wait, apiListTransactions maps it already? Check.
+
 // apiListTransactions uses fromGqlTxType internally.
 // But check import of apiListTransactions.
 import { Transaction } from "../../types/models";
@@ -40,13 +40,8 @@ const BudgetScreen: React.FC = () => {
   const currencySymbol = getCurrencySymbol(profile?.currency);
   const language = profile?.language || "en";
 
-  const {
-    draft,
-    cycleStartDate,
-    cycleEndExclusive,
-    setCategoryBudget,
-    save,
-  } = useBudget();
+  const { draft, cycleStartDate, cycleEndExclusive, setCategoryBudget, save } =
+    useBudget();
   const themeTextColor = isDark ? "#FFFFFF" : "#000000";
 
   const [mode, setMode] = useState<BudgetMode>("PLAN");
@@ -205,14 +200,19 @@ const BudgetScreen: React.FC = () => {
                 <Text style={{ color: subTextColor, marginBottom: 10 }}>
                   DEBUG STUB:
                 </Text>
-                <Text style={{ color: themeTextColor }}>Cycle Start: {cycleStartDate} </Text>
-                <Text style={{ color: themeTextColor }}>Cycle End (excl): {cycleEndExclusive}</Text>
+                <Text style={{ color: themeTextColor }}>
+                  Cycle Start: {cycleStartDate}{" "}
+                </Text>
+                <Text style={{ color: themeTextColor }}>
+                  Cycle End (excl): {cycleEndExclusive}
+                </Text>
                 <Text style={{ color: themeTextColor, marginTop: 10 }}>
                   Total Budget: {currencySymbol} {draft.totalBudget}
                 </Text>
 
                 <Text style={{ color: themeTextColor, marginTop: 10 }}>
-                  Category Budgets: {Object.keys(draft.categoryBudgets).length} defined
+                  Category Budgets: {Object.keys(draft.categoryBudgets).length}{" "}
+                  defined
                 </Text>
               </View>
             )}
