@@ -13,6 +13,7 @@ import {
 } from "../api/transactionsApi";
 import { Transaction } from "../types/models";
 import { DateRangePresetApi } from "../api/profileApi";
+import { useTransactions } from "./TransactionsContext";
 
 import { getCycleRangeForDate } from "../utils/billingCycle";
 
@@ -66,6 +67,8 @@ export const OverviewCycleProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const { profile } = useProfile();
+  const { lastUpdated } = useTransactions();
+
   const [offset, setOffset] = useState(0);
   const [start, setStart] = useState<string>("");
   const [endExclusive, setEndExclusive] = useState<string>("");
@@ -121,7 +124,7 @@ export const OverviewCycleProvider: React.FC<{ children: ReactNode }> = ({
     } finally {
       setLoading(false);
     }
-  }, [profile, offset]);
+  }, [profile, offset, lastUpdated]);
 
   // Reset offset when specific profile fields change
   useEffect(() => {

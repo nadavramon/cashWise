@@ -10,8 +10,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import GradientBackground from "../../components/GradientBackground";
 import { useTransactions } from "../../context/TransactionsContext";
 import { useProfile } from "../../context/ProfileContext";
+import { useBudget } from "../../context/BudgetContext";
 import { getCurrencySymbol } from "../../utils/currency";
-import { RepoCategoryGroup, RepoCategoryItem } from "../../data/categoryRepo";
+import {
+  RepoCategoryGroup,
+  RepoCategoryItem,
+  CATEGORY_REPO,
+} from "../../data/categoryRepo";
 import { BudgetMode, PlannedBudgetItem } from "../../types/budget";
 import { t } from "../../config/i18n";
 
@@ -30,10 +35,44 @@ const BudgetScreen: React.FC = () => {
   const currencySymbol = getCurrencySymbol(profile?.currency);
   const language = profile?.language || "en";
 
+  const {
+    draft,
+    cycleStartDate,
+    cycleEndExclusive,
+    setCategoryBudget,
+    save,
+  } = useBudget();
+  const themeTextColor = isDark ? "#FFFFFF" : "#000000";
+
   const [mode, setMode] = useState<BudgetMode>("PLAN");
 
-  // Mock budget state
+  // Mock budget state - synced with Context
   const [plannedBudgets, setPlannedBudgets] = useState<PlannedBudgetItem[]>([]);
+
+  // Sync draft -> UI
+  React.useEffect(() => {
+    const newPlanned: PlannedBudgetItem[] = [];
+    const cats = draft.categoryBudgets;
+
+    Object.entries(cats).forEach(([catCode, amount]) => {
+      // Find metadata from Repo
+      for (const group of CATEGORY_REPO) {
+        const item = group.items.find((i) => i.code === catCode);
+        if (item) {
+          newPlanned.push({
+            id: catCode,
+            groupId: group.id,
+            subCategoryCode: item.code,
+            subCategoryLabel: item.label,
+            amount,
+          });
+          break;
+        }
+      }
+    });
+
+    setPlannedBudgets(newPlanned);
+  }, [draft.categoryBudgets]);
 
   // Modal State
   const [activeGroup, setActiveGroup] = useState<RepoCategoryGroup | null>(
@@ -73,7 +112,7 @@ const BudgetScreen: React.FC = () => {
     setShowAddModal(true);
   };
 
-  const handleSaveBudget = (
+  const handleSaveBudget = async (
     amountInput: string,
     subCategory: RepoCategoryItem,
   ) => {
@@ -82,15 +121,12 @@ const BudgetScreen: React.FC = () => {
     const amount = parseFloat(amountInput);
     if (isNaN(amount) || amount <= 0) return;
 
-    const newItem: PlannedBudgetItem = {
-      id: Date.now().toString(),
-      groupId: activeGroup.id,
-      subCategoryCode: subCategory.code,
-      subCategoryLabel: subCategory.label,
-      amount: amount,
-    };
+    // 1. Update Context Draft
+    setCategoryBudget(subCategory.code, amount);
 
-    setPlannedBudgets((prev) => [...prev, newItem]);
+    // 2. Persist immediately (or rely on a Save button later, but user asked for edit+save)
+    await save();
+
     setShowAddModal(false);
   };
 
@@ -130,8 +166,17 @@ const BudgetScreen: React.FC = () => {
 
             {mode === "REMAINING" && (
               <View style={styles.placeholderContainer}>
-                <Text style={{ color: subTextColor }}>
-                  {t("remainingComingSoon", language)}
+                <Text style={{ color: subTextColor, marginBottom: 10 }}>
+                  DEBUG STUB:
+                </Text>
+                <Text style={{ color: themeTextColor }}>Cycle Start: {cycleStartDate} </Text>
+                <Text style={{ color: themeTextColor }}>Cycle End (excl): {cycleEndExclusive}</Text>
+                <Text style={{ color: themeTextColor, marginTop: 10 }}>
+                  Total Budget: {currencySymbol} {draft.totalBudget}
+                </Text>
+
+                <Text style={{ color: themeTextColor, marginTop: 10 }}>
+                  Category Budgets: {Object.keys(draft.categoryBudgets).length} defined
                 </Text>
               </View>
             )}

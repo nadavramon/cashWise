@@ -20,6 +20,7 @@ import {
 import { TransactionsProvider } from "./src/context/TransactionsContext";
 import { CategoriesProvider } from "./src/context/CategoriesContext";
 import { ProfileProvider } from "./src/context/ProfileContext";
+import { BudgetProvider } from "./src/context/BudgetContext";
 
 // Import your wrapper
 import GradientBackground from "./src/components/GradientBackground";
@@ -85,10 +86,12 @@ export default function App() {
           <ProfileProvider>
             <CategoriesProvider>
               <TransactionsProvider>
-                {/* 4. Pass the transparent theme to NavigationContainer */}
-                <NavigationContainer theme={TransparentNavTheme}>
-                  {user ? <BottomTabs /> : <AuthStack />}
-                </NavigationContainer>
+                <BudgetProvider>
+                  {/* 4. Pass the transparent theme to NavigationContainer */}
+                  <NavigationContainer theme={TransparentNavTheme}>
+                    {user ? <BottomTabs /> : <AuthStack />}
+                  </NavigationContainer>
+                </BudgetProvider>
               </TransactionsProvider>
             </CategoriesProvider>
           </ProfileProvider>

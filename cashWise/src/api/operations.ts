@@ -134,3 +134,29 @@ export const EXPORT_TRANSACTIONS = /* GraphQL */ `
     }
   }
 `;
+
+export const GET_BUDGET = /* GraphQL */ `
+  query GetBudget($cycleStartDate: AWSDate!) {
+    getBudget(cycleStartDate: $cycleStartDate) {
+      cycleStartDate
+      cycleEndExclusive
+      totalBudget
+      categoryBudgets
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const UPSERT_BUDGET = /* GraphQL */ `
+  mutation UpsertBudget($input: UpsertBudgetInput!) {
+    upsertBudget(input: $input) {
+      cycleStartDate
+      cycleEndExclusive
+      totalBudget
+      categoryBudgets
+      createdAt
+      updatedAt
+    }
+  }
+`;

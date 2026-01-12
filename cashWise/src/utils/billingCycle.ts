@@ -22,6 +22,14 @@ export function getCycleRangeForDate(
   preset: DateRangePresetApi,
   offset: number = 0,
 ): { start: string; endExclusive: string } {
+  // 0. Handle CUSTOM (Should be handled by caller with specific dates, but prevent fallthrough)
+  if (preset === "CUSTOM") {
+    return {
+      start: formatDate(today),
+      endExclusive: formatDate(new Date(today.getTime() + 86400000)), // tomorrow
+    };
+  }
+
   // 1. Handle Calendar Month Logic
   if (preset === "THIS_MONTH" || preset === "LAST_MONTH") {
     // Base: Start of current month

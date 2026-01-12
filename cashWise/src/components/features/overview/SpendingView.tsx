@@ -123,7 +123,6 @@ const SpendingView: React.FC<SpendingViewProps> = ({ themeColor }) => {
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
       <View style={dynamicCardStyle}>
-        <Text style={[styles.cardTitle, { color: textColor }]}>Summary</Text>
         <View style={styles.totalsRow}>
           <View style={styles.totalCol}>
             <Text style={[styles.totalLabel, { color: subTextColor }]}>

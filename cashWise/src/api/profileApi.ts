@@ -7,7 +7,8 @@ export type DateRangePresetApi =
   | "LAST_CYCLE"
   | "THIS_MONTH"
   | "LAST_MONTH"
-  | "YEAR_TO_DATE";
+  | "YEAR_TO_DATE"
+  | "CUSTOM";
 
 export interface UserProfileApi {
   userId: string;

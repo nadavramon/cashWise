@@ -20,7 +20,7 @@ import {
 import { getCycleRangeForDate } from "../utils/billingCycle";
 import { DateRangePresetApi } from "../api/profileApi";
 
-type DateRangePreset = DateRangePresetApi | "CUSTOM" | "THIS_WEEK";
+type DateRangePreset = DateRangePresetApi | "THIS_WEEK";
 
 interface DateRange {
   preset: DateRangePreset;
@@ -35,12 +35,29 @@ const formatDate = (d: Date): string => {
   return `${yyyy}-${mm}-${dd}`;
 };
 
+const getNowInTimezone = (timeZone: string): Date => {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+
+  const y = Number(parts.find((p) => p.type === "year")?.value);
+  const m = Number(parts.find((p) => p.type === "month")?.value);
+  const d = Number(parts.find((p) => p.type === "day")?.value);
+
+  // local Date representing that calendar day
+  return new Date(y, m - 1, d);
+};
+
 // Helper to bridge the gap between `DateRangePreset` (UI) and billing logic
 const getPresetRange = (
   preset: DateRangePreset,
   startDay: number = 1,
+  timezone: string = "Asia/Jerusalem",
 ): DateRange => {
-  const now = new Date();
+  const now = getNowInTimezone(timezone);
 
   // Handle specific UI-only presets like THIS_WEEK if not covered by utility
   if (preset === "THIS_WEEK") {
@@ -100,6 +117,7 @@ interface TransactionsContextValue {
   loading: boolean;
   error: string | null;
   dateRange: DateRange;
+  lastUpdated?: number; // Add this
   setPresetRange: (preset: DateRangePreset) => void;
   setCustomRange: (fromDate: string, toDate: string) => void;
   refreshCurrentRange: () => Promise<void>;
@@ -152,9 +170,13 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const { userId } = useAuth();
   const { profile } = useProfile();
+
   const [transactions, setTransactions] = useState<UiTransaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Add lastUpdated state to signal changes to consumers (Chart, CycleContext)
+  const [lastUpdated, setLastUpdated] = useState<number>(Date.now());
 
   // Default to CURRENT_CYCLE
   const [dateRange, setDateRangeState] = useState<DateRange>(() => {
@@ -213,7 +235,8 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
       // If the current preset is different from the target AND it's not custom/interactive, maybe update?
       // For now, we force update only if we are still on the initial/default logic or if simple switching is desired.
       // Let's just update based on the profile's preferred preset + startDay logic.
-      return getPresetRange(targetPreset, startDay);
+      const timezone = profile.billingCycleTimezone || "Asia/Jerusalem";
+      return getPresetRange(targetPreset, startDay, timezone);
     });
   }, [profile]);
 
@@ -241,6 +264,7 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
       const created = await apiCreateTransaction(apiInput);
       const uiTx = mapApiToUi(created);
       setTransactions((prev) => [uiTx, ...prev]);
+      setLastUpdated(Date.now()); // Signal update
     } catch (e: any) {
       console.error("Failed to create transaction", e);
       setError(e?.message ?? "Failed to create transaction");
@@ -254,7 +278,9 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
 
   const setPresetRange = (preset: DateRangePreset) => {
     const startDay = profile?.billingCycleStartDay || 1;
-    const range = getPresetRange(preset, startDay);
+
+    const timezone = profile?.billingCycleTimezone || "Asia/Jerusalem";
+    const range = getPresetRange(preset, startDay, timezone);
     setDateRangeState(range);
   };
 
@@ -320,6 +346,7 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
           };
         }),
       );
+      setLastUpdated(Date.now()); // Signal update
     } catch (e: any) {
       console.error("Failed to update transaction", e);
       setError(e?.message ?? "Failed to update transaction");
@@ -338,6 +365,7 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
       setTransactions((prev) =>
         prev.filter((tx) => !(tx.id === id && tx.date === date)),
       );
+      setLastUpdated(Date.now()); // Signal update
     } catch (e: any) {
       console.error("Failed to delete transaction", e);
       setError(e?.message ?? "Failed to delete transaction");
@@ -352,6 +380,7 @@ export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({
         loading,
         error,
         dateRange,
+        lastUpdated,
         setPresetRange,
         setCustomRange,
         refreshCurrentRange,
