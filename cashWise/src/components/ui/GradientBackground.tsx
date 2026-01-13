@@ -2,7 +2,7 @@ import React from "react";
 import { StyleSheet, useColorScheme, ViewStyle } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
-import { CASHWISE_COLORS } from "../config/themes";
+import { CASHWISE_COLORS } from "../../config/themes";
 
 interface GradientBackgroundProps {
   children: React.ReactNode;
@@ -30,7 +30,7 @@ export default function GradientBackground({
     >
       {/* StatusBar ensures the battery/wifi icons match the background.
         'light' makes text white (good for dark mode or dark-blue tops).
-        'dark' makes text black. 
+        'dark' makes text black.
       */}
       <StatusBar style={isDark ? "light" : "dark"} />
       {children}

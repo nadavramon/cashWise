@@ -15,9 +15,7 @@ import { Transaction } from "../../../types/models";
 import { useCategories } from "../../../context/CategoriesContext";
 import { useTransactions } from "../../../context/TransactionsContext";
 
-import { useOverviewCycle } from "../../../context/CycleContext";
 
-import { usePaginatedTransactions } from "../../../hooks/usePaginatedTransactions";
 
 interface TransactionListProps {
   onScroll?: (event: any) => void;
@@ -101,39 +99,29 @@ const AnimatedTransactionRow: React.FC<{
 // ... (keep AnimatedTransactionRow as is or move it if needed, but for now assuming it stays)
 
 // Helper to map API items to UI items if needed (local simple version)
-const mapToModel = (apiItem: any): Transaction => ({
-  ...apiItem,
-  type: apiItem.type === "INCOME" ? "income" : "expense",
-  note: apiItem.note ?? undefined,
-  updatedAt: apiItem.updatedAt ?? undefined,
-});
+
 
 const TransactionList: React.FC<TransactionListProps> = () => {
-  const { deleteTransaction } = useTransactions();
-  // Get date range from cycle context
-  const { start, endExclusive } = useOverviewCycle();
-
   const {
-    items: apiItems,
-    hasNextPage,
-    loadingInitial,
-    loadingMore,
-    refreshing,
+    transactions,
+    deleteTransaction,
     loadMore,
-    refresh,
+    hasNextPage,
+    loadingMore,
+    loading,
+    refreshCurrentRange,
     error,
-  } = usePaginatedTransactions({
-    fromDate: start,
-    toDate: endExclusive,
-    pageSize: 20,
-  });
+  } = useTransactions();
 
-  const items = apiItems.map(mapToModel);
+  const items = transactions;
 
   const handleDelete = async (id: string, date: string) => {
     await deleteTransaction(id, date);
-    refresh(); // Refresh list after deletion to sync state
   };
+
+  const refresh = refreshCurrentRange;
+  const loadingInitial = loading && transactions.length === 0;
+  const refreshing = loading && transactions.length > 0;
 
   const renderListItem = ({ item }: { item: Transaction }) => {
     return (

@@ -7,7 +7,12 @@ import {
   ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import GradientBackground from "../../components/GradientBackground";
+import {
+  GradientBackground,
+  NavigationHeader,
+  ModeSwitcher,
+  ModeOption,
+} from "../../components/ui";
 import { useProfile } from "../../context/ProfileContext";
 import { useBudget } from "../../context/BudgetContext";
 import { getCurrencySymbol } from "../../utils/currency";
@@ -25,12 +30,10 @@ import { BudgetMode, PlannedBudgetItem } from "../../types/budget";
 import { t } from "../../config/i18n";
 
 // Feature Components
-import BudgetModeSwitcher from "../../components/features/budget/BudgetModeSwitcher";
 import BudgetCard from "../../components/features/budget/BudgetCard";
 import CategorySection from "../../components/features/budget/CategorySection";
 import AddBudgetModal from "../../components/features/budget/AddBudgetModal";
 import SubCategoryModal from "../../components/features/budget/SubCategoryModal";
-import OverviewHeader from "../../components/features/overview/OverviewHeader";
 
 const BudgetScreen: React.FC = () => {
   const isDark = useColorScheme() === "dark";
@@ -45,6 +48,13 @@ const BudgetScreen: React.FC = () => {
   const themeTextColor = isDark ? "#FFFFFF" : "#000000";
 
   const [mode, setMode] = useState<BudgetMode>("PLAN");
+
+  // Mode options for the switcher
+  const budgetModes: ModeOption<BudgetMode>[] = [
+    { value: "PLAN", label: t("modePlan", language) },
+    { value: "REMAINING", label: t("modeRemaining", language) },
+    { value: "INSIGHTS", label: t("modeInsights", language) },
+  ];
 
   // Mock budget state - synced with Context
   const [plannedBudgets, setPlannedBudgets] = useState<PlannedBudgetItem[]>([]);
@@ -165,16 +175,18 @@ const BudgetScreen: React.FC = () => {
     <GradientBackground>
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
-          <OverviewHeader
+          <NavigationHeader
             title={t("budgetTitle", language)}
             themeColor={themeColor}
           />
 
-          <BudgetModeSwitcher
+          <ModeSwitcher
+            modes={budgetModes}
             currentMode={mode}
             onModeChange={setMode}
             themeColor={themeColor}
-            language={language}
+            fontSize={18}
+            style={{ marginVertical: 16 }}
           />
 
           <ScrollView contentContainerStyle={styles.contentContainer}>

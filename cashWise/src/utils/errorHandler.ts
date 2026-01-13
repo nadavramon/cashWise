@@ -6,19 +6,49 @@
  * @param error - The raw error object caught in catch block or returned in result.errors
  * @returns A localized or user-friendly string
  */
-export function getErrorMessage(error: any): string {
+export interface GraphQLError {
+  message: string;
+  locations?: { line: number; column: number }[];
+  path?: (string | number)[];
+  errorType?: string;
+}
+
+export interface GraphQLResult {
+  data?: any;
+  errors?: GraphQLError[];
+}
+
+function isGraphQLResult(error: any): error is GraphQLResult {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "errors" in error &&
+    Array.isArray(error.errors)
+  );
+}
+
+function isGraphQLErrorArray(error: any): error is GraphQLError[] {
+  return Array.isArray(error) && error.length > 0 && "message" in error[0];
+}
+
+/**
+ * Parses diverse error shapes (GraphQL, Network, Standard Error) into a user-friendly message.
+ *
+ * @param error - The raw error object caught in catch block or returned in result.errors
+ * @returns A localized or user-friendly string
+ */
+export function getErrorMessage(error: unknown): string {
   if (!error) return "An unknown error occurred.";
 
-  // 1. Handle Array of GraphQL Errors
-  if (Array.isArray(error)) {
-    // If it's an array, it might be result.errors from AppSync
+  // 1. Handle Array of GraphQL Errors (e.g. from result.errors)
+  if (isGraphQLErrorArray(error)) {
     const firstMsg = error[0]?.message;
     return mapBackendMessage(firstMsg);
   }
 
-  // 2. Handle Object with 'errors' property (AppSync response style)
-  if (error.errors && Array.isArray(error.errors)) {
-    return mapBackendMessage(error.errors[0]?.message);
+  // 2. Handle Object with 'errors' property (AppSync Response style)
+  if (isGraphQLResult(error)) {
+    return mapBackendMessage(error.errors?.[0]?.message);
   }
 
   // 3. Handle Standard Error Object

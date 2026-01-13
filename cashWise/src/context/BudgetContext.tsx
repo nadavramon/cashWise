@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import { apiGetBudget, apiUpsertBudget, Budget } from "../api/budgetApi";
 import { useTransactions } from "./TransactionsContext";
+import { getExclusiveEndDate } from "../utils/billingCycle";
 
 type BudgetDraft = {
   totalBudget: number;
@@ -42,14 +43,9 @@ export const useBudget = (): BudgetContextValue => {
 const safeNum = (n: any, fallback: number) =>
   typeof n === "number" && !Number.isNaN(n) ? n : fallback;
 
-const addDays = (yyyyMmDd: string, days: number): string => {
-  const [y, m, d] = yyyyMmDd.split("-").map(Number);
-  const dt = new Date(y, m - 1, d);
-  dt.setDate(dt.getDate() + days);
-  const mm = String(dt.getMonth() + 1).padStart(2, "0");
-  const dd = String(dt.getDate()).padStart(2, "0");
-  return `${dt.getFullYear()}-${mm}-${dd}`;
-};
+
+
+
 
 export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -61,8 +57,7 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({
   const cycleStartDate = dateRange.fromDate;
   // TransactionsContext uses inclusive toDate. Budget uses exclusive end date.
   const cycleEndExclusive = useMemo(() => {
-    if (!dateRange.toDate) return "";
-    return addDays(dateRange.toDate, 1);
+    return getExclusiveEndDate(dateRange.toDate);
   }, [dateRange.toDate]);
 
   const [budget, setBudget] = useState<Budget | null>(null);

@@ -96,5 +96,3 @@ CashWise employs a robust centralized cycle management system (`OverviewCycleCon
 Categories are managed via a static `CategoryRepo` pattern, allowing for easy expansion, color coding, and grouping of financial categories without polluting the database with repetitive metadata.
 
 ---
-
-Built with ❤️ using React Native.

@@ -178,3 +178,22 @@ function addMonths(date: Date, deltaMonths: number): Date {
   d.setMonth(targetMonth);
   return d;
 }
+
+/**
+ * Adds N days to a YYYY-MM-DD string and returns YYYY-MM-DD.
+ */
+export const addDays = (yyyyMmDd: string, days: number): string => {
+  const [y, m, d] = yyyyMmDd.split("-").map(Number);
+  const dt = new Date(y, m - 1, d);
+  dt.setDate(dt.getDate() + days);
+  return formatDate(dt);
+};
+
+/**
+ * Converts an inclusive end date (YYYY-MM-DD) to an exclusive end date (next day).
+ * Useful for Budget contexts that require cycleEndExclusive.
+ */
+export const getExclusiveEndDate = (inclusiveToDate: string): string => {
+  if (!inclusiveToDate) return "";
+  return addDays(inclusiveToDate, 1);
+};

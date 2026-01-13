@@ -29,12 +29,7 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
 }) => {
   const { profile } = useProfile();
   const language = profile?.language || "en";
-  const isDark = useColorScheme() === "dark";
   const [isExpanded, setIsExpanded] = useState(false);
-
-  const textColor = isDark ? "#FFFFFF" : "#333333";
-  const subTextColor = isDark ? "#CCCCCC" : "#666666";
-  const cardBg = isDark ? "rgba(30, 30, 30, 0.6)" : "rgba(255, 255, 255, 0.8)";
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
@@ -55,15 +50,15 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
   return (
     <Animated.View
       layout={LinearTransition.springify().damping(15)}
-      style={[styles.card, { backgroundColor: cardBg }]}
+      className="rounded-3xl p-4 overflow-hidden mb-6 bg-white/80 dark:bg-[#1e1e1e]/60"
     >
       <TouchableOpacity
         activeOpacity={1}
         onPress={isExpanded ? toggleExpand : undefined}
       >
-        <View style={styles.cardHeader}>
+        <View className="flex-row items-center justify-between">
           {/* Left: Chart */}
-          <View style={styles.chartContainer}>
+          <View className="w-20 h-20 items-center justify-center mr-4">
             <PieChart
               data={
                 chartData.length > 0 ? chartData : [{ value: 1, color: "#ddd" }]
@@ -76,11 +71,11 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
           </View>
 
           {/* Right: Text Info */}
-          <View style={styles.cardInfo}>
-            <Text style={[styles.cardLabel, { color: subTextColor }]}>
+          <View className="flex-1 justify-center">
+            <Text className="text-sm mb-1 text-[#666] dark:text-[#CCC]">
               {t("totalPlannedExpenses", language)}
             </Text>
-            <Text style={[styles.cardAmount, { color: textColor }]}>
+            <Text className="text-2xl font-bold text-[#333] dark:text-white">
               {currencySymbol}
               {totalPlannedExpenses.toLocaleString()}
             </Text>
@@ -88,19 +83,21 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
 
           {/* Far Right: Expand Button (only visible when collapsed) */}
           {!isExpanded && (
-            <TouchableOpacity
-              onPress={toggleExpand}
-              style={styles.expandButton}
-            >
-              <Ionicons name="chevron-down" size={24} color={subTextColor} />
+            <TouchableOpacity onPress={toggleExpand} className="p-2">
+              <Ionicons
+                name="chevron-down"
+                size={24}
+                className="text-[#666] dark:text-[#CCC]" // Note: Ionicons doesn't accept className for color, handle via props
+                color={useColorScheme() === "dark" ? "#CCC" : "#666"}
+              />
             </TouchableOpacity>
           )}
         </View>
 
         {/* Expanded Content: List */}
         {isExpanded && (
-          <View style={styles.expandedContent}>
-            <View style={styles.divider} />
+          <View className="mt-4">
+            <View className="h-[1px] bg-[rgba(150,150,150,0.2)] mb-4" />
             {plannedBudgets.map((item) => {
               const percentageOfIncome =
                 totalIncome > 0
@@ -111,21 +108,23 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
               const color = group?.color || "#999";
 
               return (
-                <View key={item.id} style={styles.listItem}>
-                  <View style={styles.listItemLeft}>
+                <View
+                  key={item.id}
+                  className="flex-row items-center justify-between mb-3"
+                >
+                  <View className="flex-row items-center">
                     <View
-                      style={[styles.colorDot, { backgroundColor: color }]}
+                      className="w-4 h-4 rounded-md mr-3"
+                      style={{ backgroundColor: color }}
                     />
-                    <Text style={[styles.itemName, { color: textColor }]}>
+                    <Text className="text-base font-medium mr-2 text-[#333] dark:text-white">
                       {item.subCategoryLabel}
                     </Text>
-                    <Text
-                      style={[styles.itemPercentage, { color: subTextColor }]}
-                    >
+                    <Text className="text-sm text-[#666] dark:text-[#CCC]">
                       {percentageOfIncome}%
                     </Text>
                   </View>
-                  <Text style={[styles.itemAmount, { color: textColor }]}>
+                  <Text className="text-base font-semibold text-[#333] dark:text-white">
                     {currencySymbol}
                     {item.amount.toLocaleString()}
                   </Text>
@@ -133,7 +132,7 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
               );
             })}
             {plannedBudgets.length === 0 && (
-              <Text style={[styles.noDataText, { color: subTextColor }]}>
+              <Text className="text-center mt-2.5 italic text-[#666] dark:text-[#CCC]">
                 {t("noPlannedExpenses", language)}
               </Text>
             )}
@@ -144,81 +143,6 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
-  card: {
-    borderRadius: 24,
-    padding: 16,
-    overflow: "hidden",
-    marginBottom: 24,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  chartContainer: {
-    width: 80,
-    height: 80,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 16,
-  },
-  cardInfo: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  cardLabel: {
-    fontSize: 14,
-    marginBottom: 4,
-  },
-  cardAmount: {
-    fontSize: 24,
-    fontWeight: "700",
-  },
-  expandButton: {
-    padding: 8,
-  },
-  expandedContent: {
-    marginTop: 16,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "rgba(150, 150, 150, 0.2)",
-    marginBottom: 16,
-  },
-  listItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 12,
-  },
-  listItemLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  colorDot: {
-    width: 16,
-    height: 16,
-    borderRadius: 6,
-    marginRight: 12,
-  },
-  itemName: {
-    fontSize: 16,
-    fontWeight: "500",
-    marginRight: 8,
-  },
-  itemPercentage: {
-    fontSize: 14,
-  },
-  itemAmount: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  noDataText: {
-    textAlign: "center",
-    marginTop: 10,
-    fontStyle: "italic",
-  },
-});
+
 
 export default BudgetCard;

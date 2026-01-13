@@ -24,11 +24,15 @@ import TransactionForm from "../../components/features/transactions/TransactionF
 import type { OverviewStackParamList } from "../../navigation/OverviewStack";
 import { t as translate } from "../../config/i18n";
 
+// UI Components
+import {
+  NavigationHeader,
+  ModeSwitcher,
+  ModeOption,
+} from "../../components/ui";
+
 // Feature Components
-import OverviewHeader from "../../components/features/overview/OverviewHeader";
-import OverviewModeSwitcher, {
-  OverviewMode,
-} from "../../components/features/overview/OverviewModeSwitcher";
+export type OverviewMode = "DASHBOARD" | "SPENDING" | "LIST";
 import DashboardView from "../../components/features/overview/DashboardView";
 import SpendingView from "../../components/features/overview/SpendingView";
 import TransactionList from "../../components/features/overview/TransactionList";
@@ -58,7 +62,13 @@ const OverviewContent: React.FC = () => {
 
   const [mode, setMode] = useState<OverviewMode>("DASHBOARD");
   const [showAddModal, setShowAddModal] = useState(false);
-  // const [filter, setFilter] = useState<'EXPENSES' | 'INCOME' | 'SAVINGS'>('EXPENSES'); // Removed as no longer used by spendingChartData
+
+  // Mode options for the switcher
+  const overviewModes: ModeOption<OverviewMode>[] = [
+    { value: "DASHBOARD", label: translate("modeDashboard", language) },
+    { value: "SPENDING", label: translate("modeSpending", language) },
+    { value: "LIST", label: translate("modeList", language) },
+  ];
 
   const translateX = useRef(new Animated.Value(0)).current;
   const modeOrder: Record<OverviewMode, number> = {
@@ -135,23 +145,23 @@ const OverviewContent: React.FC = () => {
         <Text style={[styles.title, { color: textColor }]}>
           {translate("overviewTitle", language)}
         </Text>
-        <OverviewHeader
+        <NavigationHeader
           dateRange={{
             fromDate: billingCycle.label.split(" - ")[0],
             toDate: billingCycle.label.split(" - ")[1],
-          }} // simplified
+          }}
           themeColor={themeColor}
           title={undefined}
-          onPrev={() => setOffset(offset + 1)} // Previous = increase offset (time ago)
-          onNext={() => setOffset(offset - 1)} // Next = decrease offset
+          onPrev={() => setOffset(offset + 1)}
+          onNext={() => setOffset(offset - 1)}
           showArrows={true}
         />
 
-        <OverviewModeSwitcher
+        <ModeSwitcher
+          modes={overviewModes}
           currentMode={mode}
           onModeChange={handleModeChange}
           themeColor={themeColor}
-          language={language}
         />
 
         <View style={styles.modeContentWrapper}>

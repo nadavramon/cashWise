@@ -6,10 +6,9 @@ import {
   StyleSheet,
   useColorScheme,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
-import { Ionicons } from "@expo/vector-icons"; // or similar icon lib
-
-interface OverviewHeaderProps {
+interface NavigationHeaderProps {
   title?: string;
   dateRange?: { fromDate: string; toDate: string };
   themeColor: string;
@@ -18,7 +17,7 @@ interface OverviewHeaderProps {
   showArrows?: boolean;
 }
 
-const OverviewHeader: React.FC<OverviewHeaderProps> = ({
+const NavigationHeader: React.FC<NavigationHeaderProps> = ({
   title,
   dateRange,
   themeColor,
@@ -91,16 +90,6 @@ const styles = StyleSheet.create({
   arrowButton: {
     padding: 4,
   },
-  addButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  addButtonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 14,
-  },
 });
 
-export default OverviewHeader;
+export default NavigationHeader;
