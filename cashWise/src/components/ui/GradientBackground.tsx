@@ -1,38 +1,35 @@
 import React from "react";
-import { StyleSheet, useColorScheme, ViewStyle } from "react-native";
+import { StyleSheet, ViewStyle } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { StatusBar } from "expo-status-bar";
-import { CASHWISE_COLORS } from "../../config/themes";
+import { useTheme } from "../../hooks/useTheme";
 
 interface GradientBackgroundProps {
   children: React.ReactNode;
   style?: ViewStyle;
 }
 
+/**
+ * Full-screen gradient background that adapts to light/dark mode
+ *
+ * Light mode: Bold blue → warm gold (confident, trustworthy)
+ * Dark mode: Electric teal → deep purple (modern, premium)
+ */
 export default function GradientBackground({
   children,
   style,
 }: GradientBackgroundProps) {
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
-
-  // Select the correct gradient based on theme
-  const colors = isDark
-    ? CASHWISE_COLORS.dark.gradient
-    : CASHWISE_COLORS.light.gradient;
+  const { colors, isDark } = useTheme();
 
   return (
     <LinearGradient
-      colors={colors}
-      start={{ x: 0, y: 0 }} // Top Left
-      end={{ x: 1, y: 1 }} // Bottom Right
+      colors={colors.gradientColors}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
       style={[styles.container, style]}
     >
-      {/* StatusBar ensures the battery/wifi icons match the background.
-        'light' makes text white (good for dark mode or dark-blue tops).
-        'dark' makes text black.
-      */}
-      <StatusBar style={isDark ? "light" : "dark"} />
+      {/* StatusBar: 'light' = white icons (for dark backgrounds) */}
+      <StatusBar style={isDark ? "light" : "light"} />
       {children}
     </LinearGradient>
   );

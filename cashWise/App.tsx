@@ -19,7 +19,7 @@ import AuthStack from "./src/navigation/AuthStack";
 import { GradientBackground } from "./src/components/ui";
 
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
-// ... imports
+import { useFonts } from "./src/hooks/useFonts";
 
 // Internal component to handle conditional rendering based on auth state
 const AppContent = () => {
@@ -53,6 +53,27 @@ const AppContent = () => {
 };
 
 export default function App() {
+  const [fontsLoaded, fontError] = useFonts();
+  const scheme = useColorScheme();
+
+  // Show loading spinner while fonts are loading
+  if (!fontsLoaded && !fontError) {
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <GradientBackground>
+          <View
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          >
+            <ActivityIndicator
+              size="large"
+              color={scheme === "dark" ? "#fff" : "#007CBE"}
+            />
+          </View>
+        </GradientBackground>
+      </GestureHandlerRootView>
+    );
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <GradientBackground>
