@@ -15,8 +15,6 @@ import { Transaction } from "../../../types/models";
 import { useCategories } from "../../../context/CategoriesContext";
 import { useTransactions } from "../../../context/TransactionsContext";
 
-
-
 interface TransactionListProps {
   onScroll?: (event: any) => void;
 }
@@ -99,7 +97,6 @@ const AnimatedTransactionRow: React.FC<{
 // ... (keep AnimatedTransactionRow as is or move it if needed, but for now assuming it stays)
 
 // Helper to map API items to UI items if needed (local simple version)
-
 
 const TransactionList: React.FC<TransactionListProps> = () => {
   const {

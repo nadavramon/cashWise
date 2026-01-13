@@ -15,8 +15,6 @@ import { BudgetProvider } from "./src/context/BudgetContext";
 import BottomTabs from "./src/navigation/BottomTabs";
 import AuthStack from "./src/navigation/AuthStack";
 
-
-
 // Import your wrapper
 import { GradientBackground } from "./src/components/ui";
 
@@ -38,9 +36,7 @@ const AppContent = () => {
 
   if (checkingAuth) {
     return (
-      <View
-        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-      >
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator
           size="large"
           color={scheme === "dark" ? "#fff" : "#007CBE"}

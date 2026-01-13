@@ -43,10 +43,6 @@ export const useBudget = (): BudgetContextValue => {
 const safeNum = (n: any, fallback: number) =>
   typeof n === "number" && !Number.isNaN(n) ? n : fallback;
 
-
-
-
-
 export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {

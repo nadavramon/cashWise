@@ -1,11 +1,5 @@
 import React, { useState, useMemo } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  useColorScheme,
-} from "react-native";
+import { View, Text, TouchableOpacity, useColorScheme } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { PieChart } from "react-native-gifted-charts";
@@ -29,6 +23,8 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
 }) => {
   const { profile } = useProfile();
   const language = profile?.language || "en";
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpand = () => {
@@ -87,8 +83,7 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
               <Ionicons
                 name="chevron-down"
                 size={24}
-                className="text-[#666] dark:text-[#CCC]" // Note: Ionicons doesn't accept className for color, handle via props
-                color={useColorScheme() === "dark" ? "#CCC" : "#666"}
+                color={isDark ? "#CCC" : "#666"}
               />
             </TouchableOpacity>
           )}
@@ -142,7 +137,5 @@ const BudgetCard: React.FC<BudgetCardProps> = ({
     </Animated.View>
   );
 };
-
-
 
 export default BudgetCard;

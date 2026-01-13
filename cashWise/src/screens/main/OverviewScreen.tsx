@@ -32,10 +32,11 @@ import {
 } from "../../components/ui";
 
 // Feature Components
-export type OverviewMode = "DASHBOARD" | "SPENDING" | "LIST";
 import DashboardView from "../../components/features/overview/DashboardView";
 import SpendingView from "../../components/features/overview/SpendingView";
 import TransactionList from "../../components/features/overview/TransactionList";
+
+export type OverviewMode = "DASHBOARD" | "SPENDING" | "LIST";
 
 type Nav = NativeStackNavigationProp<OverviewStackParamList, "OverviewMain">;
 
