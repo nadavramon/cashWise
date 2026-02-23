@@ -1,21 +1,19 @@
-// src/screens/OverviewScreen.tsx
-import React, { useState, useMemo, useRef } from "react";
+// State managment and memoization
+import React, { useState, useMemo, FC } from "react";
+// Core UI building blocks
 import {
   View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Animated,
   useWindowDimensions,
-  useColorScheme,
   Modal,
 } from "react-native";
+
+// Safe rendering and screen navigation
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-// import { useTransactions } from '../store/TransactionsContext'; // Replaced by useCycle
-import { useProfile } from "../../context/ProfileContext";
 
+// Access to user profile and billing cycle data
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useProfile } from "../../context/ProfileContext";
 import {
   OverviewCycleProvider,
   useOverviewCycle,
@@ -23,15 +21,20 @@ import {
 import TransactionForm from "../../components/features/transactions/TransactionForm";
 import type { OverviewStackParamList } from "../../navigation/OverviewStack";
 import { t as translate } from "../../config/i18n";
+import { useTheme } from "../../hooks/useTheme";
 
-// UI Components
+//Reusable UI primitives
 import {
   NavigationHeader,
   ModeSwitcher,
   ModeOption,
+  Body,
+  ButtonText,
+  ScalePressable,
 } from "../../components/ui";
+import { screenStyles } from "../../styles/screenStyles";
 
-// Feature Components
+// The 3 main view modes
 import DashboardView from "../../components/features/overview/DashboardView";
 import SpendingView from "../../components/features/overview/SpendingView";
 import TransactionList from "../../components/features/overview/TransactionList";
@@ -40,7 +43,7 @@ export type OverviewMode = "DASHBOARD" | "SPENDING" | "LIST";
 
 type Nav = NativeStackNavigationProp<OverviewStackParamList, "OverviewMain">;
 
-const OverviewContent: React.FC = () => {
+const OverviewContent: FC = () => {
   const navigation = useNavigation<Nav>();
   const { width } = useWindowDimensions();
   const {
@@ -53,13 +56,8 @@ const OverviewContent: React.FC = () => {
   } = useOverviewCycle();
 
   const { profile } = useProfile();
-
   const language = profile?.language || "en";
-
-  // --- THEME & COLORS SETUP ---
-  const isDarkMode = useColorScheme() === "dark";
-  const themeColor = isDarkMode ? "#02C3BD" : "#007CBE";
-  const textColor = isDarkMode ? "#FFFFFF" : "#333333";
+  const { colors } = useTheme();
 
   const [mode, setMode] = useState<OverviewMode>("DASHBOARD");
   const [showAddModal, setShowAddModal] = useState(false);
@@ -70,13 +68,6 @@ const OverviewContent: React.FC = () => {
     { value: "SPENDING", label: translate("modeSpending", language) },
     { value: "LIST", label: translate("modeList", language) },
   ];
-
-  const translateX = useRef(new Animated.Value(0)).current;
-  const modeOrder: Record<OverviewMode, number> = {
-    DASHBOARD: 0,
-    SPENDING: 1,
-    LIST: 2,
-  };
 
   // Billing Cycle Label for Header
   const billingCycle = useMemo(() => {
@@ -93,106 +84,103 @@ const OverviewContent: React.FC = () => {
     return { label };
   }, [start, endExclusive]);
 
-  // const cycleBudget = 0; // TODO: Fetch from profile or settings // Removed as no longer used
-
-  // const formatAmount = (amount: number) => { // Removed as no longer used
-  //   return `${currencySymbol}${amount.toFixed(2)}`;
-  // };
-
   const handleDayPress = (date: string) => {
     navigation.navigate("DailyTransactions", { date });
   };
 
   const handleModeChange = (nextMode: OverviewMode) => {
     if (nextMode === mode) return;
-    const direction = modeOrder[nextMode] > modeOrder[mode] ? 1 : -1;
-    translateX.setValue(direction * width);
     setMode(nextMode);
-    Animated.timing(translateX, {
-      toValue: 0,
-      duration: 250,
-      useNativeDriver: true,
-    }).start();
   };
 
+  // Render the appropriate content based on mode
   const renderModeContent = () => {
     if (cycleLoading && transactions.length === 0) {
-      // Can add a loading spinner here
       return (
-        <View style={{ padding: 20 }}>
-          <Text style={{ color: textColor, textAlign: "center" }}>
+        <View className="p-5">
+          <Body className="text-center" color={colors.textPrimary}>
             Loading...
-          </Text>
+          </Body>
         </View>
       );
     }
 
     if (mode === "DASHBOARD") {
-      return (
-        <DashboardView onDayPress={handleDayPress} themeColor={themeColor} />
-      );
+      return <DashboardView onDayPress={handleDayPress} themeColor={colors.primary} />;
     }
 
     if (mode === "SPENDING") {
-      return <SpendingView themeColor={themeColor} />;
+      return (
+        <SpendingView
+          themeColor={colors.primary}
+          onAddTransaction={() => setShowAddModal(true)}
+        />
+      );
     }
 
     return <TransactionList />;
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Text style={[styles.title, { color: textColor }]}>
-          {translate("overviewTitle", language)}
-        </Text>
-        <NavigationHeader
-          dateRange={{
-            fromDate: billingCycle.label.split(" - ")[0],
-            toDate: billingCycle.label.split(" - ")[1],
-          }}
-          themeColor={themeColor}
-          title={undefined}
-          onPrev={() => setOffset(offset + 1)}
-          onNext={() => setOffset(offset - 1)}
-          showArrows={true}
-        />
+    <SafeAreaView style={screenStyles.safeArea}>
+      <View style={screenStyles.container}>
+        <View>
+          <NavigationHeader
+            title={translate("overviewTitle", language)}
+            dateRange={{
+              fromDate: billingCycle.label.split(" - ")[0],
+              toDate: billingCycle.label.split(" - ")[1],
+            }}
+            themeColor={colors.primary}
+            onPrev={() => setOffset(offset + 1)}
+            onNext={() => setOffset(offset - 1)}
+            showArrows={true}
+          />
+        </View>
 
-        <ModeSwitcher
-          modes={overviewModes}
-          currentMode={mode}
-          onModeChange={handleModeChange}
-          themeColor={themeColor}
-        />
+        <View>
+          <ModeSwitcher
+            modes={overviewModes}
+            currentMode={mode}
+            onModeChange={handleModeChange}
+            themeColor={colors.primary}
+          />
+        </View>
 
-        <View style={styles.modeContentWrapper}>
-          <Animated.View
-            style={[styles.modeContentInner, { transform: [{ translateX }] }]}
-          >
-            {renderModeContent()}
-          </Animated.View>
+        {/* Content Area */}
+        <View className="flex-1 overflow-hidden">
+          {renderModeContent()}
         </View>
 
         {/* Conditional Add Button */}
         {(mode === "SPENDING" || mode === "LIST") &&
           (transactions.length === 0 ? (
-            <View style={styles.emptyStateContainer} pointerEvents="box-none">
-              <TouchableOpacity
-                style={styles.bigAddButton}
-                onPress={() => setShowAddModal(true)}
-              >
-                <Text style={styles.bigAddButtonText}>
-                  + {translate("addTransaction", language)}
-                </Text>
-              </TouchableOpacity>
+            <View className="absolute inset-0 justify-center items-center z-10">
+              <ScalePressable onPress={() => setShowAddModal(true)}>
+                <View className="bg-white dark:bg-gray-800 py-4 px-8 rounded-full shadow-lg">
+                  <ButtonText color={colors.textPrimary}>
+                    + {translate("addTransaction", language)}
+                  </ButtonText>
+                </View>
+              </ScalePressable>
             </View>
           ) : (
-            <TouchableOpacity
-              style={[styles.fab, { backgroundColor: themeColor }]}
+            <ScalePressable
               onPress={() => setShowAddModal(true)}
+              className="absolute bottom-6 right-6 z-20"
             >
-              <Text style={styles.fabText}>+</Text>
-            </TouchableOpacity>
+              <View
+                className="w-14 h-14 rounded-full justify-center items-center shadow-lg"
+                style={{ backgroundColor: colors.primary }}
+              >
+                <ButtonText
+                  color="#fff"
+                  style={{ fontSize: 32, marginTop: -4 }}
+                >
+                  +
+                </ButtonText>
+              </View>
+            </ScalePressable>
           ))}
 
         <Modal
@@ -202,10 +190,8 @@ const OverviewContent: React.FC = () => {
           presentationStyle="pageSheet"
         >
           <View
-            style={{
-              flex: 1,
-              backgroundColor: isDarkMode ? "#1a1a1a" : "#f2f2f7",
-            }}
+            className="flex-1"
+            style={{ backgroundColor: colors.background }}
           >
             <TransactionForm
               onSuccess={() => setShowAddModal(false)}
@@ -218,7 +204,7 @@ const OverviewContent: React.FC = () => {
   );
 };
 
-const OverviewScreen: React.FC = () => {
+const OverviewScreen: FC = () => {
   return (
     <OverviewCycleProvider>
       <OverviewContent />
@@ -227,71 +213,3 @@ const OverviewScreen: React.FC = () => {
 };
 
 export default OverviewScreen;
-
-const styles = StyleSheet.create({
-  safeArea: { flex: 1 },
-  container: { flex: 1, padding: 16 },
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  modeContentWrapper: {
-    flex: 1,
-    overflow: "hidden",
-  },
-  modeContentInner: {
-    flex: 1,
-    width: "100%",
-  },
-  emptyStateContainer: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 10,
-  },
-  bigAddButton: {
-    backgroundColor: "#fff",
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 30,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4.65,
-    elevation: 8,
-  },
-  bigAddButtonText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
-  },
-  fab: {
-    position: "absolute",
-    bottom: 24,
-    right: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    elevation: 8,
-    zIndex: 20,
-  },
-  fabText: {
-    fontSize: 32,
-    color: "#fff",
-    marginTop: -4,
-  },
-});

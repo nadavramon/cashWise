@@ -6,6 +6,9 @@ export { default as NavigationHeader } from "./NavigationHeader";
 export { default as ModeSwitcher } from "./ModeSwitcher";
 export type { ModeOption } from "./ModeSwitcher";
 
+// Button Components - Reusable interactive buttons
+export { Button, GradientButton, IconButton, FAB } from "./Button";
+
 // Typography Components - Custom fonts with distinctive character
 export {
   Typography,
@@ -86,3 +89,19 @@ export {
   RipplePressable,
   PulseButton,
 } from "./Animated/Pressable";
+
+// Background & Visual Effects - Atmosphere and depth
+export {
+  // Noise & Texture
+  NoiseOverlay,
+  StaticNoise,
+  // Mesh Gradients & Atmospheric Effects
+  MeshGradient,
+  AtmosphericOrbs,
+  Spotlight,
+  Vignette,
+  // Card Effects
+  NeumorphicCard,
+  ElevatedCard,
+} from "./Backgrounds";
+

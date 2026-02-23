@@ -467,7 +467,7 @@ export function getShadow(preset: keyof typeof SHADOWS): ViewStyle {
  */
 export function createGlow(
   color: string,
-  intensity: "subtle" | "medium" | "strong" = "medium"
+  intensity: "subtle" | "medium" | "strong" = "medium",
 ): ViewStyle {
   const config = {
     subtle: { opacity: 0.2, radius: 12 },
@@ -487,10 +487,7 @@ export function createGlow(
 /**
  * Create glass morphism style
  */
-export function createGlass(
-  isDark: boolean,
-  opacity: number = 0.5
-): ViewStyle {
+export function createGlass(isDark: boolean, opacity: number = 0.5): ViewStyle {
   return {
     backgroundColor: isDark
       ? `rgba(30, 30, 30, ${opacity})`

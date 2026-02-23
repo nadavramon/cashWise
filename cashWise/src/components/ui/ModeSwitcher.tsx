@@ -1,12 +1,12 @@
-import React from "react";
+import React, { FC } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
-  useColorScheme,
   ViewStyle,
 } from "react-native";
+import { useTheme } from "../../hooks/useTheme";
 
 export interface ModeOption<T extends string> {
   value: T;
@@ -29,25 +29,27 @@ interface ModeButtonProps {
   onPress: () => void;
   themeColor: string;
   textColor: string;
-  isDarkMode: boolean;
+  borderColor: string;
   buttonStyle?: ViewStyle;
   fontSize?: number;
 }
 
-const ModeButton: React.FC<ModeButtonProps> = ({
+
+
+const ModeButton: FC<ModeButtonProps> = ({
   label,
   active,
   onPress,
   themeColor,
   textColor,
-  isDarkMode,
+  borderColor,
   buttonStyle,
   fontSize = 14,
 }) => (
   <TouchableOpacity
     style={[
       styles.modeButton,
-      { borderColor: isDarkMode ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)" },
+      { borderColor },
       active && { backgroundColor: themeColor },
       buttonStyle,
     ]}
@@ -74,8 +76,8 @@ function ModeSwitcher<T extends string>({
   buttonStyle,
   fontSize,
 }: ModeSwitcherProps<T>) {
-  const isDarkMode = useColorScheme() === "dark";
-  const textColor = isDarkMode ? "#FFFFFF" : "#333333";
+  const { colors } = useTheme();
+  const textColor = colors.textPrimary;
 
   return (
     <View style={[styles.modeContainer, style]}>
@@ -87,7 +89,7 @@ function ModeSwitcher<T extends string>({
           onPress={() => onModeChange(mode.value)}
           themeColor={themeColor}
           textColor={textColor}
-          isDarkMode={isDarkMode}
+          borderColor={colors.border}
           buttonStyle={buttonStyle}
           fontSize={fontSize}
         />

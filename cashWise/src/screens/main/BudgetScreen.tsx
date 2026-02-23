@@ -2,11 +2,11 @@ import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   useColorScheme,
   ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { screenStyles } from "../../styles/screenStyles";
 import {
   GradientBackground,
   NavigationHeader,
@@ -34,6 +34,8 @@ import BudgetCard from "../../components/features/budget/BudgetCard";
 import CategorySection from "../../components/features/budget/CategorySection";
 import AddBudgetModal from "../../components/features/budget/AddBudgetModal";
 import SubCategoryModal from "../../components/features/budget/SubCategoryModal";
+import RemainingView from "../../components/features/budget/RemainingView";
+import InsightsView from "../../components/features/budget/InsightsView";
 
 const BudgetScreen: React.FC = () => {
   const isDark = useColorScheme() === "dark";
@@ -173,8 +175,8 @@ const BudgetScreen: React.FC = () => {
 
   return (
     <GradientBackground>
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.container}>
+      <SafeAreaView style={screenStyles.safeArea}>
+        <View style={screenStyles.container}>
           <NavigationHeader
             title={t("budgetTitle", language)}
             themeColor={themeColor}
@@ -189,7 +191,7 @@ const BudgetScreen: React.FC = () => {
             style={{ marginVertical: 16 }}
           />
 
-          <ScrollView contentContainerStyle={styles.contentContainer}>
+          <ScrollView contentContainerStyle={screenStyles.contentContainer}>
             {mode === "PLAN" && (
               <View>
                 <BudgetCard
@@ -208,33 +210,11 @@ const BudgetScreen: React.FC = () => {
             )}
 
             {mode === "REMAINING" && (
-              <View style={styles.placeholderContainer}>
-                <Text style={{ color: subTextColor, marginBottom: 10 }}>
-                  DEBUG STUB:
-                </Text>
-                <Text style={{ color: themeTextColor }}>
-                  Cycle Start: {cycleStartDate}{" "}
-                </Text>
-                <Text style={{ color: themeTextColor }}>
-                  Cycle End (excl): {cycleEndExclusive}
-                </Text>
-                <Text style={{ color: themeTextColor, marginTop: 10 }}>
-                  Total Budget: {currencySymbol} {draft.totalBudget}
-                </Text>
-
-                <Text style={{ color: themeTextColor, marginTop: 10 }}>
-                  Category Budgets: {Object.keys(draft.categoryBudgets).length}{" "}
-                  defined
-                </Text>
-              </View>
+              <RemainingView currencySymbol={currencySymbol} />
             )}
 
             {mode === "INSIGHTS" && (
-              <View style={styles.placeholderContainer}>
-                <Text style={{ color: subTextColor }}>
-                  {t("insightsComingSoon", language)}
-                </Text>
-              </View>
+              <InsightsView currencySymbol={currencySymbol} />
             )}
           </ScrollView>
         </View>
@@ -265,21 +245,3 @@ const BudgetScreen: React.FC = () => {
 };
 
 export default BudgetScreen;
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-
-  contentContainer: {
-    paddingBottom: 40,
-  },
-  placeholderContainer: {
-    alignItems: "center",
-    marginTop: 40,
-  },
-});

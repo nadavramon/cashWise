@@ -17,3 +17,17 @@ export {
   useParallax,
   useCountAnimation,
 } from "./useAnimations";
+
+// Budget hooks
+export { useBudgetProgress } from "./useBudgetProgress";
+export type {
+  CategoryProgress,
+  BudgetProgressResult,
+} from "./useBudgetProgress";
+
+export { useBudgetInsights } from "./useBudgetInsights";
+export type {
+  MonthlyData,
+  TopCategory,
+  BudgetInsightsResult,
+} from "./useBudgetInsights";

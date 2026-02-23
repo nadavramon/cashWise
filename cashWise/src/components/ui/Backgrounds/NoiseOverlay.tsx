@@ -1,13 +1,6 @@
 import React, { useMemo } from "react";
 import { StyleSheet, View, ViewStyle, StyleProp } from "react-native";
-import {
-  Canvas,
-  Rect,
-  Shader,
-  Skia,
-  Fill,
-  vec,
-} from "@shopify/react-native-skia";
+import { Canvas, Shader, Skia, Fill, vec } from "@shopify/react-native-skia";
 import { NOISE, type NoisePreset } from "../../../config/visuals";
 
 // ============================================
@@ -116,7 +109,7 @@ export function NoiseOverlay({
       uOpacity: finalOpacity,
       uFrequency: finalFrequency,
     }),
-    [time, finalOpacity, finalFrequency]
+    [time, finalOpacity, finalFrequency],
   );
 
   return (

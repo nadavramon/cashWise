@@ -17,12 +17,19 @@ import { useProfile } from "../../../context/ProfileContext";
 import { useCategories } from "../../../context/CategoriesContext";
 import { computePeriodTotals } from "../../../utils/overview";
 import { getCurrencySymbol } from "../../../utils/currency";
+import { Button } from "../../ui";
+import TransactionForm from "../transactions/TransactionForm";
 
 interface SpendingViewProps {
   themeColor: string;
+  /** Callback when user wants to add a transaction */
+  onAddTransaction?: () => void;
 }
 
-const SpendingView: React.FC<SpendingViewProps> = ({ themeColor }) => {
+const SpendingView: React.FC<SpendingViewProps> = ({
+  themeColor,
+  onAddTransaction,
+}) => {
   const isDarkMode = useColorScheme() === "dark";
   const textColor = isDarkMode ? "#FFFFFF" : "#333333";
   const subTextColor = isDarkMode ? "#CCCCCC" : "#666666";
@@ -30,6 +37,7 @@ const SpendingView: React.FC<SpendingViewProps> = ({ themeColor }) => {
   const cardBorder = isDarkMode ? "rgba(255,255,255,0.1)" : "#ddd";
 
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   // --- State ---
   const [filter, setFilter] = useState<"EXPENSES" | "INCOME" | "SAVINGS">(
@@ -103,11 +111,6 @@ const SpendingView: React.FC<SpendingViewProps> = ({ themeColor }) => {
     styles.card,
     { backgroundColor: cardBg, borderColor: cardBorder },
   ];
-
-  // Render... uses local variables now.
-  // Need to pass themeColor to render.
-  // The existing JSX uses 'totals', 'cycleBudget', 'filter', 'spendingChartData', 'pieData', 'totalAmount'.
-  // These are now all local.
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -239,9 +242,23 @@ const SpendingView: React.FC<SpendingViewProps> = ({ themeColor }) => {
             />
           </View>
         ) : (
-          <Text style={styles.emptyText}>
-            No {filter.toLowerCase()} in this period
-          </Text>
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyText}>
+              No {filter.toLowerCase()} in this period
+            </Text>
+            {onAddTransaction && (
+              <Button
+                variant="glass"
+                size="lg"
+                textColor={themeColor}
+                leftIcon={<Ionicons name="add" size={20} color={themeColor} />}
+                onPress={() => setIsModalVisible(true)}
+                style={{ marginTop: 16 }}
+              >
+                Add {filter.charAt(0) + filter.slice(1).toLowerCase()}
+              </Button>
+            )}
+          </View>
         )}
       </View>
 
@@ -265,7 +282,27 @@ const SpendingView: React.FC<SpendingViewProps> = ({ themeColor }) => {
           </View>
         ))}
       </View>
-    </ScrollView>
+
+      <Modal
+        visible={isModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: isDarkMode ? "#000" : "#fff",
+          }}
+        >
+          <TransactionForm
+            initialType={filter === "INCOME" ? "income" : "expense"}
+            onSuccess={() => setIsModalVisible(false)}
+            onCancel={() => setIsModalVisible(false)}
+          />
+        </View>
+      </Modal>
+    </ScrollView >
   );
 };
 
@@ -358,10 +395,15 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "700",
   },
+  emptyState: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+  },
   emptyText: {
     color: "#999",
     fontStyle: "italic",
-    marginTop: 20,
+    textAlign: "center",
   },
   breakdownList: {
     marginTop: 16,

@@ -29,12 +29,14 @@ const todayAsString = () => {
 
 interface TransactionFormProps {
   initialDate?: string;
+  initialType?: "income" | "expense";
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
 const TransactionForm: React.FC<TransactionFormProps> = ({
   initialDate,
+  initialType,
   onSuccess,
   onCancel,
 }) => {
@@ -44,7 +46,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   const language = profile?.language || "en";
   const isDark = useColorScheme() === "dark";
 
-  const [type, setType] = useState<"income" | "expense">("expense");
+  const [type, setType] = useState<"income" | "expense">(initialType ?? "expense");
   const [amount, setAmount] = useState("");
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [date, setDate] = useState(initialDate ?? todayAsString());
